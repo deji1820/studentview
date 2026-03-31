@@ -1628,6 +1628,16 @@ body {
                             <div class="submission-row">
                                 <span class="submission-label">Name:</span>
                                 <input type="text" class="submission-input" value="Juan Dela Cruz" readonly>
+
+                                <!-- Success Modal -->
+<div id="submissionSuccessModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:60px 80px;text-align:center;max-width:450px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalFadeIn 0.3s ease-out;">
+        <div style="font-size:64px;margin-bottom:20px;">✅</div>
+        <div style="font-size:24px;font-weight:700;color:#2d2550;margin-bottom:10px;">Submitted Successfully!</div>
+        <div style="font-size:15px;color:#666;margin-bottom:30px;">Your document has been sent to the Disciplinary Officer for review.</div>
+        <button onclick="closeSubmissionSuccess()" style="background:#2d2550;color:#d4a650;border:none;border-radius:8px;padding:12px 40px;font-size:16px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;">OK</button>
+    </div>
+</div>
                             </div>
 
                             <div class="submission-row">
@@ -2168,36 +2178,44 @@ function submitRequest() {
         async function submitDocument() {
     const studentNumber = getStudentNumberFromURL();
     if (!studentNumber) { alert('Unable to identify student.'); return; }
- 
-    const inputs       = document.querySelectorAll('.submission-input');
+
     const dateOfAbsence = document.getElementById('dateOfAbsenceInput')?.value || '';
-    const fileInput = document.getElementById('fileInput');
-    const fileName  = fileInput?.files[0]?.name || '';
- 
+    const fileInput     = document.getElementById('fileInput');
+    const fileName      = fileInput?.files[0]?.name || '';
+
     if (!dateOfAbsence) {
-    alert('Please select the Date of Absence.');
-    return;
-}
- 
+        alert('Please select the Date of Absence.');
+        return;
+    }
+
     const btn = document.querySelector('.btn-submit-document');
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Submitting…';
- 
+
     try {
-        const res  = await apiFetch(`${API_BASE}/add_document_submission.php`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({
-                student_number:  studentNumber,
-                date_of_absence: dateOfAbsence,
-                file_name:       fileName,
-            }),
-        });
+        const formData = new FormData();
+formData.append('student_number',  studentNumber);
+formData.append('date_of_absence', dateOfAbsence);
+if (fileInput?.files[0]) {
+    formData.append('file', fileInput.files[0]);
+}
+
+const res = await apiFetch(`${API_BASE}/add_document_submission.php`, {
+    method: 'POST',
+    // No Content-Type header — browser sets it automatically for FormData
+    body:   formData,
+});
         const data = await res.json();
- 
+
         if (data.success) {
-            alert('Document submitted successfully!');
-            // Refresh pending count on home page
+            // Reset form
+            document.getElementById('dateOfAbsenceInput').value = '';
+            if (fileInput) fileInput.value = '';
+            document.getElementById('fileNameDisplay').textContent = 'No file chosen';
+            // Show success popup
+            const modal = document.getElementById('submissionSuccessModal');
+            modal.style.display = 'flex';
+            // Refresh pending count
             loadPendingCount(studentNumber);
         } else {
             alert(data.message || 'Submission failed. Please try again.');
@@ -2206,9 +2224,13 @@ function submitRequest() {
         console.error('submitDocument:', err);
         alert('Network error. Please try again.');
     } finally {
-        btn.disabled = false;
+        btn.disabled    = false;
         btn.textContent = 'Submit';
     }
+}
+
+function closeSubmissionSuccess() {
+    document.getElementById('submissionSuccessModal').style.display = 'none';
 }
 
         function navigateToGMRC(event) {
