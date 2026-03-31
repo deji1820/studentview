@@ -1867,8 +1867,9 @@ if (gmrcGs) {
 }
 
         // Load offense history into home table and offense history page
-        loadStudentOffenses(studentNumber);
-        loadStudentGMRC(studentNumber);
+loadStudentOffenses(studentNumber);
+loadStudentGMRC(studentNumber);
+loadPendingCount(studentNumber);
 
     } catch (err) {
         console.error('loadStudentData:', err);
@@ -2162,9 +2163,50 @@ function submitRequest() {
             updateTopBar('📄', 'Document Request', '');
         }
 
-        function submitDocument() {
+        async function submitDocument() {
+    const studentNumber = getStudentNumberFromURL();
+    if (!studentNumber) { alert('Unable to identify student.'); return; }
+ 
+    const inputs       = document.querySelectorAll('.submission-input');
+    const dateOfAbsence = inputs[5]?.value.trim() || '';
+    const fileName      = document.querySelector('.file-name-link')?.textContent.trim() || '';
+ 
+    if (!dateOfAbsence || dateOfAbsence === '10 / 12 / 2025') {
+        alert('Please enter the Date of Absence.');
+        return;
+    }
+ 
+    const btn = document.querySelector('.btn-submit-document');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+ 
+    try {
+        const res  = await apiFetch(`${API_BASE}/add_document_submission.php`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+                student_number:  studentNumber,
+                date_of_absence: dateOfAbsence,
+                file_name:       fileName,
+            }),
+        });
+        const data = await res.json();
+ 
+        if (data.success) {
             alert('Document submitted successfully!');
+            // Refresh pending count on home page
+            loadPendingCount(studentNumber);
+        } else {
+            alert(data.message || 'Submission failed. Please try again.');
         }
+    } catch (err) {
+        console.error('submitDocument:', err);
+        alert('Network error. Please try again.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+    }
+}
 
         function navigateToGMRC(event) {
             event.preventDefault();
@@ -2203,6 +2245,20 @@ function submitRequest() {
                 dropdown.classList.remove('show');
             }
         });
+
+      async function loadPendingCount(studentNumber) {
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_document_submissions.php?student_number=${studentNumber}`);
+        const data = await res.json();
+        if (data.success) {
+            const el = document.querySelector('.pending-cards-section .pending-card:first-child .pending-card-value');
+            if (el) el.textContent = data.pending_count;
+        }
+    } catch (err) {
+        console.error('loadPendingCount:', err);
+    }
+} 
+        
         // Initialize on load
 document.addEventListener('DOMContentLoaded', loadStudentData);
     </script>
