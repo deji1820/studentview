@@ -1651,17 +1651,19 @@ body {
                             </div>
 
                             <div class="submission-row">
-                                <span class="submission-label">Date of Absence:</span>
-                                <input type="text" class="submission-input" value="10 / 12 / 2025" readonly>
-                            </div>
+    <span class="submission-label">Date of Absence:</span>
+    <input type="date" class="submission-input" id="dateOfAbsenceInput">
+</div>
 
                             <div class="submission-row">
-                                <span class="submission-label">Attach File:</span>
-                                <div class="file-display-box">
-                                    <span class="file-name-link">excuseletter.pdf</span>
-                                    <span class="file-upload-icon">⬆</span>
-                                </div>
-                            </div>
+    <span class="submission-label">Attach File:</span>
+    <div class="file-display-box" onclick="document.getElementById('fileInput').click()" style="cursor:pointer;">
+        <span class="file-name-link" id="fileNameDisplay">No file chosen</span>
+        <span class="file-upload-icon">⬆</span>
+    </div>
+    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display:none;"
+        onchange="document.getElementById('fileNameDisplay').textContent = this.files[0]?.name || 'No file chosen'">
+</div>
                         </div>
 
                         <div class="submission-button-container">
@@ -2168,13 +2170,14 @@ function submitRequest() {
     if (!studentNumber) { alert('Unable to identify student.'); return; }
  
     const inputs       = document.querySelectorAll('.submission-input');
-    const dateOfAbsence = inputs[5]?.value.trim() || '';
-    const fileName      = document.querySelector('.file-name-link')?.textContent.trim() || '';
+    const dateOfAbsence = document.getElementById('dateOfAbsenceInput')?.value || '';
+    const fileInput = document.getElementById('fileInput');
+    const fileName  = fileInput?.files[0]?.name || '';
  
-    if (!dateOfAbsence || dateOfAbsence === '10 / 12 / 2025') {
-        alert('Please enter the Date of Absence.');
-        return;
-    }
+    if (!dateOfAbsence) {
+    alert('Please select the Date of Absence.');
+    return;
+}
  
     const btn = document.querySelector('.btn-submit-document');
     btn.disabled = true;
