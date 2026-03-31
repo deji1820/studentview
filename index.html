@@ -1841,6 +1841,152 @@ body {
 </div>
 
     <script>
+
+        const API_BASE = 'https://tabularly-tactless-deloras.ngrok-free.dev';
+
+async function apiFetch(url, options = {}) {
+    const headers = { 'ngrok-skip-browser-warning': 'true', ...(options.headers || {}) };
+    return fetch(url, { ...options, headers });
+}
+
+// Get student number from URL
+function getStudentNumberFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id');
+}
+
+// Load and populate all student data on page load
+async function loadStudentData() {
+    const studentNumber = getStudentNumberFromURL();
+    if (!studentNumber) {
+        // No ID in URL — redirect back to login
+        window.location.href = 'https://login-topaz-iota.vercel.app/';
+        return;
+    }
+
+    try {
+        // Fetch student info
+        const res  = await apiFetch(`${API_BASE}/get_students.php?student_number=${studentNumber}`);
+        const data = await res.json();
+        if (!data.success || !data.students.length) {
+            window.location.href = 'https://login-topaz-iota.vercel.app/';
+            return;
+        }
+
+        const s  = data.students[0];
+        const gs = [s.grade_level, s.section_name].filter(Boolean).join(' - ');
+        const name = s.full_name_display || 'Student';
+
+        // Update top bar name
+        document.querySelector('.user-name').textContent  = name;
+        document.querySelector('.user-email').textContent = s.email || '';
+        document.querySelector('#userDropdown .dropdown-username').textContent = name;
+        document.querySelector('#userDropdown .dropdown-email').textContent    = s.email || '';
+
+        // Update all hardcoded name/grade/section fields
+        document.querySelectorAll('.submission-input').forEach((el, i) => {
+            if (i === 0) el.value = name;
+            if (i === 2) el.value = s.grade_level  || '';
+            if (i === 3) el.value = s.section_name || '';
+        });
+
+        // Offense history header
+        const simpleInfo = document.querySelector('.student-simple-info');
+        if (simpleInfo) {
+            simpleInfo.innerHTML = `
+                <div><strong>Name:</strong> ${escHtml(name)}</div>
+                <div><strong>Grade and Section:</strong> ${escHtml(gs)}</div>
+                <div><strong>Student Number:</strong> ${escHtml(studentNumber)}</div>
+            `;
+        }
+
+        // GMRC header
+        const gmrcName = document.getElementById('individualStudentName');
+        if (gmrcName) gmrcName.textContent = name;
+        const gmrcGs = document.getElementById('individualGradeSection');
+        if (gmrcGs) gmrcGs.textContent = gs;
+        const gmrcId = document.getElementById('individualStudentId');
+        if (gmrcId) gmrcId.textContent = studentNumber;
+
+        // Load offense history into home table and offense history page
+        loadStudentOffenses(studentNumber);
+        loadStudentGMRC(studentNumber);
+
+    } catch (err) {
+        console.error('loadStudentData:', err);
+    }
+}
+
+async function loadStudentOffenses(studentNumber) {
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_student_offenses.php?student_number=${studentNumber}`);
+        const data = await res.json();
+        const offenses = (data.success && data.offenses) ? data.offenses : [];
+
+        // Home page table
+        const homeTbody = document.querySelector('#homePage .offense-table tbody');
+        if (homeTbody) {
+            homeTbody.innerHTML = offenses.length
+                ? offenses.map(o => `
+                    <tr>
+                        <td>${escHtml(o.offense_date)}</td>
+                        <td>${escHtml(o.offense)}</td>
+                        <td>${o.offense_level}</td>
+                        <td>${escHtml(o.evidence_links || 'N/A')}</td>
+                        <td>${escHtml(o.remarks || 'N/A')}</td>
+                    </tr>`).join('')
+                : `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No offense records found.</td></tr>`;
+        }
+
+        // Offense history page
+        const historyTable = document.querySelector('.offense-history-simple-table');
+        if (historyTable) {
+            const existingRows = historyTable.querySelectorAll('.table-row:not(.header-row)');
+            existingRows.forEach(r => r.remove());
+            if (offenses.length) {
+                offenses.forEach(o => {
+                    const row = document.createElement('div');
+                    row.className = 'table-row';
+                    row.innerHTML = `
+                        <div class="table-cell">${escHtml(o.offense_date)}</div>
+                        <div class="table-cell">${escHtml(o.offense)}</div>
+                        <div class="table-cell">${o.offense_level}</div>
+                        <div class="table-cell">${escHtml(o.remarks || 'N/A')}</div>
+                    `;
+                    historyTable.appendChild(row);
+                });
+            }
+        }
+    } catch (err) {
+        console.error('loadStudentOffenses:', err);
+    }
+}
+
+async function loadStudentGMRC(studentNumber) {
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_gmrc.php?student_number=${studentNumber}`);
+        const data = await res.json();
+        if (!data.success || !data.students || !data.students.length) return;
+
+        const s = data.students[0];
+        const gradeEl  = document.querySelector('.gmrc-grade-value');
+        const demeritEl = document.querySelectorAll('.gmrc-summary-value')[0];
+        const statusEl  = document.querySelectorAll('.gmrc-summary-value')[1];
+        const remarksEl = document.querySelector('.gmrc-remarks-text');
+
+        if (gradeEl)  gradeEl.textContent  = s.gmrc_grade    || '—';
+        if (demeritEl) demeritEl.textContent = s.total_demerits || '0';
+        if (statusEl)  statusEl.textContent  = s.status        || '—';
+        if (remarksEl) remarksEl.textContent  = s.remarks       || '—';
+    } catch (err) {
+        console.error('loadStudentGMRC:', err);
+    }
+}
+
+function escHtml(s) {
+    return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+}
+        
         function hideAllPages() {
             document.getElementById('homePage').classList.add('hidden');
             document.getElementById('offenseRecordsPage').classList.add('hidden');
@@ -2063,10 +2209,10 @@ function submitRequest() {
         }
 
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = 'https://login-topaz-iota.vercel.app/';
-            }
-        }
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = 'https://login-topaz-iota.vercel.app/';
+    }
+}
 
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('userDropdown');
@@ -2076,6 +2222,8 @@ function submitRequest() {
                 dropdown.classList.remove('show');
             }
         });
+        // Initialize on load
+document.addEventListener('DOMContentLoaded', loadStudentData);
     </script>
 </body>
 </html>
