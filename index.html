@@ -1875,20 +1875,25 @@ async function loadStudentData() {
 
         const s  = data.students[0];
         const gs = [s.grade_level, s.section_name].filter(Boolean).join(' - ');
-        const name = s.full_name_display || 'Student';
+        const name = s.last_name + ', ' + s.first_name;
 
         // Update top bar name
         document.querySelector('.user-name').textContent  = name;
-        document.querySelector('.user-email').textContent = s.email || '';
+        document.querySelector('.user-email').textContent = s.contact_email || '';
         document.querySelector('#userDropdown .dropdown-username').textContent = name;
-        document.querySelector('#userDropdown .dropdown-email').textContent    = s.email || '';
+        document.querySelector('#userDropdown .dropdown-email').textContent = s.contact_email || '';
 
-        // Update all hardcoded name/grade/section fields
-        document.querySelectorAll('.submission-input').forEach((el, i) => {
-            if (i === 0) el.value = name;
-            if (i === 2) el.value = s.grade_level  || '';
-            if (i === 3) el.value = s.section_name || '';
-        });
+        // Update document submission inputs
+const submissionInputs = document.querySelectorAll('.submission-input');
+if (submissionInputs[0]) submissionInputs[0].value = name;
+if (submissionInputs[1]) submissionInputs[1].value = s.grade_level  || '';
+if (submissionInputs[2]) submissionInputs[2].value = s.section_name || '';
+
+// Update document request inputs
+const requestInputs = document.querySelectorAll('.request-input');
+if (requestInputs[0]) requestInputs[0].value = name;
+if (requestInputs[1]) requestInputs[1].value = s.grade_level  || '';
+if (requestInputs[2]) requestInputs[2].value = s.section_name || '';
 
         // Offense history header
         const simpleInfo = document.querySelector('.student-simple-info');
@@ -1901,12 +1906,20 @@ async function loadStudentData() {
         }
 
         // GMRC header
-        const gmrcName = document.getElementById('individualStudentName');
-        if (gmrcName) gmrcName.textContent = name;
-        const gmrcGs = document.getElementById('individualGradeSection');
-        if (gmrcGs) gmrcGs.textContent = gs;
-        const gmrcId = document.getElementById('individualStudentId');
-        if (gmrcId) gmrcId.textContent = studentNumber;
+const gmrcInfo = document.querySelector('.gmrc-new-info');
+if (gmrcInfo) {
+    gmrcInfo.innerHTML = `
+        <div><strong>Name:</strong> ${escHtml(name)}</div>
+        <div><strong>Student Number:</strong> ${escHtml(studentNumber)}</div>
+    `;
+}
+const gmrcGs = document.querySelector('.gmrc-new-grade-section');
+if (gmrcGs) {
+    gmrcGs.innerHTML = `
+        <div><strong>Grade and Section:</strong> ${escHtml(gs)}</div>
+        <div><strong>Quarter 1</strong></div>
+    `;
+}
 
         // Load offense history into home table and offense history page
         loadStudentOffenses(studentNumber);
