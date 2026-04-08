@@ -1813,13 +1813,25 @@ function getStudentNumberFromURL() {
 async function loadAnnouncement() {
     try {
         const res  = await apiFetch(`${API_BASE}/save_announcement.php`);
-        const data = await res.json();
-        if (data.text) {
+        const text = await res.text(); // read raw first
+        console.log('Announcement raw response:', text);
+        
+        let data;
+        try { data = JSON.parse(text); } catch(e) {
+            console.error('Announcement JSON parse error:', e);
+            return;
+        }
+        
+        console.log('Announcement data:', data);
+        
+        // Try both possible field names
+        const msg = data.text || data.announcement || data.message || data.content || '';
+        if (msg) {
             const el = document.querySelector('.announcement-message-student');
-            if (el) el.textContent = data.text;
+            if (el) el.textContent = msg;
         }
     } catch(err) {
-        console.error('loadAnnouncement:', err);
+        console.error('loadAnnouncement failed:', err);
     }
 }
 
