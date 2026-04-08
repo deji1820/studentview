@@ -1895,6 +1895,7 @@ loadStudentGMRC(studentNumber);
 loadPendingCount(studentNumber);
 loadRequestPendingCount(studentNumber);
 loadAnnouncement();
+startNotificationPolling();
         
 
     } catch (err) {
@@ -2011,9 +2012,47 @@ function escHtml(s) {
             document.querySelector('.page-title').textContent = title;
             document.querySelector('.page-subtitle').textContent = subtitle;
         }
-        function updateDocumentFields() {
+        async function updateDocumentFields() {
+    const docType   = document.getElementById('documentTypeSelect').value;
     const container = document.getElementById('dynamicFieldsContainer');
     container.innerHTML = '';
+
+    if (!docType) return;
+
+    // Fetch matching template from server
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_form_templates.php?type=${encodeURIComponent(docType)}`);
+        const data = await res.json();
+        const template = (data.success && data.templates && data.templates.length) ? data.templates[0] : null;
+
+        if (template && template.file_path) {
+            container.innerHTML = `
+                <div class="request-row">
+                    <span class="request-label">Form Template:</span>
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;background:#f0fff4;border:1.5px solid #9ae6b4;border-radius:8px;">
+                        <span style="font-size:20px;">📎</span>
+                        <div style="flex:1;">
+                            <div style="font-size:14px;font-weight:600;color:#276749;">${escHtml(template.template_name)}</div>
+                            <div style="font-size:12px;color:#555;margin-top:2px;">${escHtml(template.description || '')}</div>
+                        </div>
+                        <a href="${API_BASE}/${escHtml(template.file_path)}" target="_blank"
+                           style="padding:8px 18px;background:#276749;color:#fff;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">
+                           Preview
+                        </a>
+                    </div>
+                </div>`;
+        } else {
+            container.innerHTML = `
+                <div class="request-row">
+                    <span class="request-label">Form Template:</span>
+                    <div style="padding:12px 20px;background:#fff3cd;border:1.5px solid #ffc107;border-radius:8px;font-size:13px;color:#856404;">
+                        No template uploaded yet for this document type.
+                    </div>
+                </div>`;
+        }
+    } catch(err) {
+        console.error('updateDocumentFields:', err);
+    }
 }
 
 function addMakeupRow() {
@@ -2285,6 +2324,116 @@ function closeSubmissionSuccess() {
         
         // Initialize on load
 document.addEventListener('DOMContentLoaded', loadStudentData);
+
+// ════════════════════════════════════════════════════════════
+//  NOTIFICATION BELL
+// ════════════════════════════════════════════════════════════
+let notificationPollInterval = null;
+
+async function loadNotifications() {
+    const studentNumber = getStudentNumberFromURL();
+    if (!studentNumber) return;
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_notifications.php?student_number=${studentNumber}`);
+        const data = await res.json();
+        if (!data.success) return;
+
+        const count = data.unread_count || 0;
+        renderNotificationBell(count);
+        renderNotificationDropdown(data.notifications || []);
+    } catch(err) {
+        console.error('loadNotifications:', err);
+    }
+}
+
+function renderNotificationBell(count) {
+    const bell = document.querySelector('.notification-icon');
+    if (!bell) return;
+    bell.innerHTML = count > 0
+        ? `🔔<span style="position:absolute;top:-4px;right:-6px;background:#dc3545;color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;line-height:1.4;">${count > 9 ? '9+' : count}</span>`
+        : '🔔';
+    bell.style.position = 'relative';
+    bell.style.display  = 'inline-block';
+    bell.onclick = toggleNotificationDropdown;
+}
+
+function renderNotificationDropdown(notifications) {
+    let dd = document.getElementById('notificationDropdown');
+    if (!dd) {
+        dd = document.createElement('div');
+        dd.id = 'notificationDropdown';
+        dd.style.cssText = `
+            position:absolute;top:100%;right:0;margin-top:10px;
+            background:#fff;border-radius:10px;
+            box-shadow:0 4px 24px rgba(0,0,0,0.15);
+            width:340px;max-height:420px;overflow-y:auto;
+            z-index:2000;display:none;`;
+        document.querySelector('.user-section').style.position = 'relative';
+        document.querySelector('.user-section').appendChild(dd);
+    }
+
+    if (!notifications.length) {
+        dd.innerHTML = `
+            <div style="padding:16px 20px;font-weight:700;font-size:14px;color:#2d2550;border-bottom:1px solid #eee;">Notifications</div>
+            <div style="padding:30px 20px;text-align:center;color:#aaa;font-size:13px;">No notifications yet.</div>`;
+        return;
+    }
+
+    dd.innerHTML = `<div style="padding:16px 20px;font-weight:700;font-size:14px;color:#2d2550;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+        <span>Notifications</span>
+        <span onclick="markAllRead()" style="font-size:11px;font-weight:500;color:#6c5fa6;cursor:pointer;text-decoration:underline;">Mark all read</span>
+    </div>` +
+    notifications.map(n => `
+        <div style="padding:14px 20px;border-bottom:1px solid #f0f0f0;background:${n.is_read ? '#fff' : '#f5f3ff'};">
+            <div style="font-size:13px;color:#2d2550;line-height:1.5;margin-bottom:6px;">
+                ${n.is_read ? '' : '<span style="display:inline-block;width:7px;height:7px;background:#6c5fa6;border-radius:50%;margin-right:6px;vertical-align:middle;"></span>'}
+                ${escHtml(n.message)}
+            </div>
+            ${n.file_path ? `
+            <a href="${API_BASE}/${escHtml(n.file_path)}" target="_blank"
+               style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#2d2550;color:#d4a650;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;">
+               📎 Download Form
+            </a>` : ''}
+            <div style="font-size:11px;color:#aaa;margin-top:6px;">${escHtml(n.created_at || '')}</div>
+        </div>`).join('');
+}
+
+function toggleNotificationDropdown() {
+    const dd = document.getElementById('notificationDropdown');
+    if (!dd) return;
+    const isOpen = dd.style.display === 'block';
+    dd.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) markAllRead();
+}
+
+async function markAllRead() {
+    const studentNumber = getStudentNumberFromURL();
+    if (!studentNumber) return;
+    try {
+        await apiFetch(`${API_BASE}/mark_notifications_read.php`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ student_number: studentNumber }),
+        });
+        renderNotificationBell(0);
+    } catch(err) { console.error('markAllRead:', err); }
+}
+
+// Close notification dropdown on outside click
+document.addEventListener('click', function(e) {
+    const dd   = document.getElementById('notificationDropdown');
+    const bell = document.querySelector('.notification-icon');
+    if (dd && bell && !bell.contains(e.target) && !dd.contains(e.target)) {
+        dd.style.display = 'none';
+    }
+});
+
+// Poll every 30 seconds for new notifications
+function startNotificationPolling() {
+    loadNotifications();
+    notificationPollInterval = setInterval(loadNotifications, 30000);
+}
+        
     </script>
 </body>
 </html>
