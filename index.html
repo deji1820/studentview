@@ -1813,18 +1813,7 @@ function getStudentNumberFromURL() {
 async function loadAnnouncement() {
     try {
         const res  = await apiFetch(`${API_BASE}/save_announcement.php`);
-        const text = await res.text(); // read raw first
-        console.log('Announcement raw response:', text);
-        
-        let data;
-        try { data = JSON.parse(text); } catch(e) {
-            console.error('Announcement JSON parse error:', e);
-            return;
-        }
-        
-        console.log('Announcement data:', data);
-        
-        // Try both possible field names
+        const data = await res.json(); // use .json() directly, same as all other API calls
         const msg = data.text || data.announcement || data.message || data.content || '';
         if (msg) {
             const el = document.querySelector('.announcement-message-student');
@@ -1834,7 +1823,6 @@ async function loadAnnouncement() {
         console.error('loadAnnouncement failed:', err);
     }
 }
-
 // Load and populate all student data on page load
 async function loadStudentData() {
     const studentNumber = getStudentNumberFromURL();
