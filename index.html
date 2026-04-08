@@ -1626,9 +1626,7 @@ body {
                 <div class="request-row">
                     <span class="request-label">Select Document to Request:</span>
                     <select class="request-select" id="documentTypeSelect" onchange="updateDocumentFields()">
-    <option value="">Select Document</option>
-    <option value="gatepass">Gate Pass</option>
-    <option value="makeup">Make-up Work Form</option>
+    <option value="">Loading templates…</option>
 </select>
                 </div>
 
@@ -1896,7 +1894,7 @@ loadPendingCount(studentNumber);
 loadRequestPendingCount(studentNumber);
 loadAnnouncement();
 startNotificationPolling();
-        
+loadDocumentTypeOptions();
 
     } catch (err) {
         console.error('loadStudentData:', err);
@@ -2006,6 +2004,26 @@ function escHtml(s) {
             document.getElementById('documentRequestPage').classList.add('hidden');
             document.getElementById('gmrcPage').classList.add('hidden');
         }
+
+        async function loadDocumentTypeOptions() {
+    const sel = document.getElementById('documentTypeSelect');
+    if (!sel) return;
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_form_templates.php`);
+        const data = await res.json();
+        if (!data.success || !data.templates.length) {
+            sel.innerHTML = '<option value="">No templates available</option>';
+            return;
+        }
+        sel.innerHTML = '<option value="">Select Document</option>' +
+            data.templates.map(t =>
+                `<option value="${escHtml(t.template_name)}">${escHtml(t.template_name)}</option>`
+            ).join('');
+    } catch(err) {
+        console.error('loadDocumentTypeOptions:', err);
+        sel.innerHTML = '<option value="">Failed to load</option>';
+    }
+}
 
         function updateTopBar(icon, title, subtitle) {
             document.querySelector('.page-icon').textContent = icon;
