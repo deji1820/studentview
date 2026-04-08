@@ -2012,65 +2012,8 @@ function escHtml(s) {
             document.querySelector('.page-subtitle').textContent = subtitle;
         }
         function updateDocumentFields() {
-    const documentType = document.getElementById('documentTypeSelect').value;
     const container = document.getElementById('dynamicFieldsContainer');
-    
-    if (!documentType) {
-        container.innerHTML = '';
-        return;
-    }
-    
-    let fieldsHTML = '';
-    
-    if (documentType === 'makeup') {
-        fieldsHTML = `
-            <div class="request-row">
-                <span class="request-label">Absence Period:</span>
-                <div style="display:flex;gap:15px;align-items:center;width:100%;">
-                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                        <span style="font-size:14px;color:var(--dark-navy);white-space:nowrap;">Start:</span>
-                        <input type="date" class="request-input" id="absenceStart" style="flex:1;">
-                    </div>
-                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
-                        <span style="font-size:14px;color:var(--dark-navy);white-space:nowrap;">End:</span>
-                        <input type="date" class="request-input" id="absenceEnd" style="flex:1;">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="makeup-table-container">
-                <label class="makeup-table-label">Subject/s to make-up:</label>
-                <table class="makeup-subjects-table">
-                    <thead>
-                        <tr>
-                            <th>Date of Absence</th>
-                            <th>Subject/s</th>
-                            <th>Topic</th>
-                        </tr>
-                    </thead>
-                    <tbody id="makeupTableBody">
-                        <tr>
-                            <td><input type="date" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
-                            <td><input type="text" placeholder="Enter subject" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
-                            <td><input type="text" placeholder="Enter topic" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="date" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
-                            <td><input type="text" placeholder="Enter subject" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
-                            <td><input type="text" placeholder="Enter topic" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="table-actions">
-                    <span class="table-action-link" onclick="addMakeupRow()">[+ Add new row]</span>
-                </div>
-            </div>
-        `;
-    } else if (documentType === 'gatepass') {
-        fieldsHTML = '';
-    }
-    
-    container.innerHTML = fieldsHTML;
+    container.innerHTML = '';
 }
 
 function addMakeupRow() {
@@ -2095,35 +2038,6 @@ async function submitRequest() {
         return;
     }
 
-    const requestFields = {};
-
-    if (documentType === 'makeup') {
-        const absenceStart = document.getElementById('absenceStart')?.value || '';
-        const absenceEnd   = document.getElementById('absenceEnd')?.value   || '';
-        
-        if (!absenceStart || !absenceEnd) {
-            alert('Please select the absence period start and end dates.');
-            return;
-        }
-
-        const rows = document.querySelectorAll('#makeupTableBody tr');
-        const subjects = [];
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('input');
-            if (cells[0]?.value || cells[1]?.value) {
-                subjects.push({
-                    date:    cells[0]?.value || '',
-                    subject: cells[1]?.value || '',
-                    topic:   cells[2]?.value || '',
-                });
-            }
-        });
-
-        requestFields.absence_start = absenceStart;
-        requestFields.absence_end   = absenceEnd;
-        requestFields.subjects      = subjects;
-    }
-
     const btn = document.querySelector('.btn-submit-request');
     btn.disabled    = true;
     btn.textContent = 'Submitting…';
@@ -2135,7 +2049,7 @@ async function submitRequest() {
             body:    JSON.stringify({
                 student_number: studentNumber,
                 document_type:  documentType,
-                request_fields: requestFields,
+                request_fields: {},
             }),
         });
         const data = await res.json();
