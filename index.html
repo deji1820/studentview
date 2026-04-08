@@ -1810,6 +1810,19 @@ function getStudentNumberFromURL() {
     return params.get('id');
 }
 
+async function loadAnnouncement() {
+    try {
+        const res  = await apiFetch(`${API_BASE}/save_announcement.php`);
+        const data = await res.json();
+        if (data.text) {
+            const el = document.querySelector('.announcement-message-student');
+            if (el) el.textContent = data.text;
+        }
+    } catch(err) {
+        console.error('loadAnnouncement:', err);
+    }
+}
+
 // Load and populate all student data on page load
 async function loadStudentData() {
     const studentNumber = getStudentNumberFromURL();
@@ -1881,6 +1894,8 @@ loadStudentOffenses(studentNumber);
 loadStudentGMRC(studentNumber);
 loadPendingCount(studentNumber);
 loadRequestPendingCount(studentNumber);
+loadAnnouncement();
+        
 
     } catch (err) {
         console.error('loadStudentData:', err);
