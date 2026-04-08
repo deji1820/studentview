@@ -2053,10 +2053,7 @@ function escHtml(s) {
                             <div style="font-size:14px;font-weight:600;color:#276749;">${escHtml(template.template_name)}</div>
                             <div style="font-size:12px;color:#555;margin-top:2px;">${escHtml(template.description || '')}</div>
                         </div>
-                        <a href="${API_BASE}/${escHtml(template.file_path)}" target="_blank"
-                           style="padding:8px 18px;background:#276749;color:#fff;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;">
-                           Preview
-                        </a>
+                        <span style="font-size:12px;color:#276749;font-weight:500;">✓ Template available</span>
                     </div>
                 </div>`;
         } else {
