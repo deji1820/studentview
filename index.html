@@ -2023,25 +2023,18 @@ function escHtml(s) {
     let fieldsHTML = '';
     
     if (documentType === 'makeup') {
-        // Make-up Work Form fields
         fieldsHTML = `
-            <div class="period-row">
+            <div class="request-row">
                 <span class="request-label">Absence Period:</span>
-                <div class="period-inputs">
-                    <span class="period-label-text">Start:</span>
-                    <select class="request-select">
-                        <option>Select Date</option>
-                        <option>01/01/2025</option>
-                        <option>01/02/2025</option>
-                    </select>
-                </div>
-                <div class="period-inputs">
-                    <span class="period-label-text">End:</span>
-                    <select class="request-select">
-                        <option>Select Date</option>
-                        <option>01/05/2025</option>
-                        <option>01/06/2025</option>
-                    </select>
+                <div style="display:flex;gap:15px;align-items:center;width:100%;">
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <span style="font-size:14px;color:var(--dark-navy);white-space:nowrap;">Start:</span>
+                        <input type="date" class="request-input" id="absenceStart" style="flex:1;">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+                        <span style="font-size:14px;color:var(--dark-navy);white-space:nowrap;">End:</span>
+                        <input type="date" class="request-input" id="absenceEnd" style="flex:1;">
+                    </div>
                 </div>
             </div>
             
@@ -2057,26 +2050,23 @@ function escHtml(s) {
                     </thead>
                     <tbody id="makeupTableBody">
                         <tr>
-                            <td><input type="text" placeholder="Enter date"></td>
-                            <td><input type="text" placeholder="Enter subject"></td>
-                            <td><input type="text" placeholder="Enter topic"></td>
+                            <td><input type="date" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
+                            <td><input type="text" placeholder="Enter subject" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
+                            <td><input type="text" placeholder="Enter topic" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
                         </tr>
                         <tr>
-                            <td><input type="text" placeholder="Enter date"></td>
-                            <td><input type="text" placeholder="Enter subject"></td>
-                            <td><input type="text" placeholder="Enter topic"></td>
+                            <td><input type="date" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
+                            <td><input type="text" placeholder="Enter subject" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
+                            <td><input type="text" placeholder="Enter topic" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
                         </tr>
                     </tbody>
                 </table>
                 <div class="table-actions">
-                    <span class="table-action-link" onclick="addMakeupRow()">[+ Add day]</span>
-                    <span class="table-action-link" onclick="alert('Add subject')">[+ Add subject]</span>
-                    <span class="table-action-link" onclick="alert('Add topic')">[+ Add topic]</span>
+                    <span class="table-action-link" onclick="addMakeupRow()">[+ Add new row]</span>
                 </div>
             </div>
         `;
     } else if (documentType === 'gatepass') {
-        // Gate Pass - no additional fields needed
         fieldsHTML = '';
     }
     
@@ -2088,9 +2078,9 @@ function addMakeupRow() {
     if (tbody) {
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
-            <td><input type="text" placeholder="Enter date"></td>
-            <td><input type="text" placeholder="Enter subject"></td>
-            <td><input type="text" placeholder="Enter topic"></td>
+            <td><input type="date" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
+            <td><input type="text" placeholder="Enter subject" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
+            <td><input type="text" placeholder="Enter topic" style="width:100%;padding:8px;border:none;background:transparent;font-family:'Outfit',sans-serif;font-size:14px;color:var(--dark-navy);"></td>
         `;
         tbody.appendChild(newRow);
     }
@@ -2105,9 +2095,17 @@ async function submitRequest() {
         return;
     }
 
-    // Collect extra fields for makeup work form
     const requestFields = {};
+
     if (documentType === 'makeup') {
+        const absenceStart = document.getElementById('absenceStart')?.value || '';
+        const absenceEnd   = document.getElementById('absenceEnd')?.value   || '';
+        
+        if (!absenceStart || !absenceEnd) {
+            alert('Please select the absence period start and end dates.');
+            return;
+        }
+
         const rows = document.querySelectorAll('#makeupTableBody tr');
         const subjects = [];
         rows.forEach(row => {
@@ -2120,7 +2118,10 @@ async function submitRequest() {
                 });
             }
         });
-        requestFields.subjects = subjects;
+
+        requestFields.absence_start = absenceStart;
+        requestFields.absence_end   = absenceEnd;
+        requestFields.subjects      = subjects;
     }
 
     const btn = document.querySelector('.btn-submit-request');
@@ -2140,12 +2141,9 @@ async function submitRequest() {
         const data = await res.json();
 
         if (data.success) {
-            // Show success popup
             document.getElementById('requestSuccessModal').style.display = 'flex';
-            // Reset form
             document.getElementById('documentTypeSelect').value = '';
             document.getElementById('dynamicFieldsContainer').innerHTML = '';
-            // Refresh pending count
             loadRequestPendingCount(studentNumber);
         } else {
             alert(data.message || 'Request failed. Please try again.');
