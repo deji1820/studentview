@@ -1581,12 +1581,12 @@ body {
 
                             <div class="submission-row">
                                 <span class="submission-label">Adviser:</span>
-                                <input type="text" class="submission-input" value="Mereophe Sharma" readonly>
+                                <input type="text" class="submission-input" placeholder="Loading…" readonly>
                             </div>
 
                             <div class="submission-row">
                                 <span class="submission-label">Guardian Contact Number:</span>
-                                <input type="text" class="submission-input" value="09994443333" readonly>
+                                <input type="text" class="submission-input" placeholder="Loading…" readonly>
                             </div>
 
                             <div class="submission-row">
@@ -1849,11 +1849,28 @@ async function loadStudentData() {
         document.querySelector('#userDropdown .dropdown-username').textContent = name;
         document.querySelector('#userDropdown .dropdown-email').textContent = s.contact_email || '';
 
-        // Update document submission inputs
+        // Fetch adviser name from sections
+let adviserName = '—';
+let guardianContact = s.contact_phone || '—';
+try {
+    const secRes  = await apiFetch(`${API_BASE}/get_sections.php`);
+    const secData = await secRes.json();
+    if (secData.success && secData.sections) {
+        const sec = secData.sections.find(sec =>
+            sec.section_name === s.section_name &&
+            String(sec.grade_level) === String(s.grade_level)
+        );
+        if (sec && sec.adviser_name) adviserName = sec.adviser_name;
+    }
+} catch(err) { console.error('fetch adviser:', err); }
+
+// Update document submission inputs
 const submissionInputs = document.querySelectorAll('.submission-input');
 if (submissionInputs[0]) submissionInputs[0].value = name;
-if (submissionInputs[1]) submissionInputs[1].value = s.grade_level  || '';
-if (submissionInputs[2]) submissionInputs[2].value = s.section_name || '';
+if (submissionInputs[1]) submissionInputs[1].value = s.grade_level   || '';
+if (submissionInputs[2]) submissionInputs[2].value = s.section_name  || '';
+if (submissionInputs[3]) submissionInputs[3].value = adviserName;
+if (submissionInputs[4]) submissionInputs[4].value = guardianContact;
 
 // Update document request inputs
 const requestInputs = document.querySelectorAll('.request-input');
