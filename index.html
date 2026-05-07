@@ -1537,31 +1537,28 @@ async function checkForNewOffenses(studentNumber) {
         const res  = await apiFetch(`${API_BASE}/get_student_offenses.php?student_number=${encodeURIComponent(studentNumber)}`);
         const data = await res.json();
 
-       
-        
         if (!data.success) return;
 
-const offenses = data.offenses || [];
-const count = offenses.length;
+        const offenses = data.offenses || [];
+        const count    = offenses.length;
 
-if (_lastKnownOffenseCount === null) {
-    _lastKnownOffenseCount = count;
-    return;
-}
+        if (_lastKnownOffenseCount === null) {
+            _lastKnownOffenseCount = count;
+            return;
+        }
 
-if (count > _lastKnownOffenseCount) {
-    _lastKnownOffenseCount = count;
-    const newest = offenses[offenses.length - 1];
-    const studentName = document.querySelector('.user-name')?.textContent || '';
-    showAiTipForOffense(
-        newest.offense       || 'a school offense',
-        newest.offense_level || '?',
-        studentName
-    );
-}
-return;
+        if (count > _lastKnownOffenseCount) {
+            _lastKnownOffenseCount = count;
+            const newest      = offenses[offenses.length - 1];
+            const studentName = document.querySelector('.user-name')?.textContent || '';
+            showAiTipForOffense(
+                newest.offense       || 'a school offense',
+                newest.offense_level || '?',
+                studentName
+            );
+        }
 
-} catch(err) {
+    } catch(err) {
         console.error('checkForNewOffenses error:', err);
     }
 }
