@@ -1038,7 +1038,7 @@ async function loadStudentData() {
         // ── AI Offense Tip polling ──
         const sNum = studentNumber;
         checkForNewOffenses(sNum);
-        setInterval(() => checkForNewOffenses(sNum), 30000);
+        setInterval(() => checkForNewOffenses(sNum), 5000);
 
     } catch (err) { console.error('loadStudentData:', err); }
 }
