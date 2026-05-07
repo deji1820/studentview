@@ -1553,9 +1553,7 @@ async function checkForNewOffenses(studentNumber) {
         if (count > _lastKnownOffenseCount) {
             _lastKnownOffenseCount = count;
             const newest = offenses.reduce((a, b) => {
-    const aId = a.id || a.offense_id || 0;
-    const bId = b.id || b.offense_id || 0;
-    return bId > aId ? b : a;
+    return new Date(b.offense_date) > new Date(a.offense_date) ? b : a;
 });
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
