@@ -1555,7 +1555,7 @@ async function checkForNewOffenses(studentNumber) {
             return;
         }
 
-        if (count > _lastKnownOffenseCount && key !== _lastKnownOffenseKey) {
+        if (count > _lastKnownOffenseCount) {
             _lastKnownOffenseCount = count;
             _lastKnownOffenseKey   = key;
             const studentName = document.querySelector('.user-name')?.textContent || '';
