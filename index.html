@@ -1554,23 +1554,35 @@ async function checkForNewOffenses(studentNumber) {
 
         const offenses = data.offenses || [];
         const count    = offenses.length;
-        const last     = offenses[offenses.length - 1];
         const key      = `offenseBaseline_${studentNumber}`;
+        const lastIdKey = `offenseLastId_${studentNumber}`;
         const stored   = sessionStorage.getItem(key);
 
         if (stored === null) {
-            // Baseline not yet set — set it now and never show a tip
             sessionStorage.setItem(key, count);
+            // Store the ID of the most recent offense as baseline
+            if (offenses.length > 0) {
+                const latestId = offenses[offenses.length - 1].id || offenses[0].id;
+                sessionStorage.setItem(lastIdKey, latestId);
+            }
             return;
         }
 
         const baseline = parseInt(stored, 10);
         if (count > baseline) {
             sessionStorage.setItem(key, count);
+
+            // Find the truly NEW offenses (those added since last check)
+            // Get the newest offense — try first item if API returns newest-first,
+            // otherwise last item if oldest-first
+            const newOffense = offenses[0]; // ← change to offenses[offenses.length - 1] if API is oldest-first
+
+            sessionStorage.setItem(lastIdKey, newOffense.id || '');
+
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
-                last.offense       || 'a school offense',
-                last.offense_level || '?',
+                newOffense.offense       || 'a school offense',
+                newOffense.offense_level || '?',
                 studentName
             );
         }
