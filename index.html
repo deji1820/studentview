@@ -1495,7 +1495,7 @@ Rules:
 - Start with something like "Students are reminded..." or "It is important to..." or "Punctuality is..."
 - Do NOT use markdown, asterisks, bold formatting, or special characters`;
         
-        const prompt = `The student's name is ${firstName}. They were just reported for: "${offenseName}" (Level ${offenseLevel} offense). Give them one warm, specific, practical tip to help them avoid this in the future.`;
+        const prompt = `A student was just reported for: "${offenseName}" (Level ${offenseLevel} offense). Generate a formal 2-sentence guidance notice about this specific offense type. Do not mention any student name.`;
 
         const res  = await fetch(`${API_BASE}/api_proxy.php`, {
             method:  'POST',
@@ -1534,35 +1534,36 @@ Rules:
 // Wrap the existing notification polling to detect new offenses
 let _lastKnownOffenseCount = null;
 
+let _lastKnownOffenseCount = null;
+let _lastKnownOffenseKey   = null;
+
 async function checkForNewOffenses(studentNumber) {
     try {
         const res  = await apiFetch(`${API_BASE}/get_student_offenses.php?student_number=${encodeURIComponent(studentNumber)}`);
         const data = await res.json();
-
         if (!data.success) return;
 
         const offenses = data.offenses || [];
-        if (offenses.length > 0) console.log('offense fields:', JSON.stringify(offenses[0]));
         const count    = offenses.length;
+        const last     = offenses[offenses.length - 1];
+        const key      = last ? `${last.offense_date}|${last.offense}` : '';
 
         if (_lastKnownOffenseCount === null) {
             _lastKnownOffenseCount = count;
+            _lastKnownOffenseKey   = key;
             return;
         }
 
-        if (count > _lastKnownOffenseCount) {
+        if (count > _lastKnownOffenseCount || (count === _lastKnownOffenseCount && key !== _lastKnownOffenseKey)) {
             _lastKnownOffenseCount = count;
-            const newest = offenses.reduce((a, b) => {
-    return new Date(b.offense_date) > new Date(a.offense_date) ? b : a;
-});
+            _lastKnownOffenseKey   = key;
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
-                newest.offense       || 'a school offense',
-                newest.offense_level || '?',
+                last.offense       || 'a school offense',
+                last.offense_level || '?',
                 studentName
             );
         }
-
     } catch(err) {
         console.error('checkForNewOffenses error:', err);
     }
