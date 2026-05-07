@@ -524,13 +524,6 @@ body {
 <!-- Toast Container -->
 <div id="toastContainer"></div>
 
-<!-- TEMP TEST BUTTON — remove after testing -->
-<button onclick="showAiTipForOffense('Tardiness', 1, 'Dela Cruz, Juan')"
-    style="position:fixed;bottom:20px;left:20px;z-index:99999;
-           background:#2d2550;color:#d4a650;border:none;border-radius:8px;
-           padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;">
-    🧪 Test AI Tip
-</button>
 
 <!-- Logout Modal -->
 <div id="logoutModal" class="modal-overlay">
@@ -1502,19 +1495,16 @@ Rules:
 - Start with something like "Students are reminded..." or "It is important to..." or "Punctuality is..."`;
         const prompt = `The student's name is ${firstName}. They were just reported for: "${offenseName}" (Level ${offenseLevel} offense). Give them one warm, specific, practical tip to help them avoid this in the future.`;
 
-        console.log('📤 Sending to proxy...');
-
         const res  = await fetch(`${API_BASE}/api_proxy.php`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ system, prompt })
         });
 
-        console.log('📥 Proxy HTTP status:', res.status);
+       
 
         const raw = await res.text();
-        console.log('📄 Raw proxy response:', raw);
-
+        
         let data;
         try {
             data = JSON.parse(raw);
@@ -1523,7 +1513,7 @@ Rules:
             throw new Error('Invalid JSON from proxy');
         }
 
-        console.log('✅ Parsed data:', data);
+        
         const tip = data.tip || 'Remember: every mistake is a chance to grow. Talk to your guidance counselor if you need support!';
 
         loading.style.display = 'none';
@@ -1547,11 +1537,10 @@ async function checkForNewOffenses(studentNumber) {
         const res  = await apiFetch(`${API_BASE}/get_student_offenses.php?student_number=${encodeURIComponent(studentNumber)}`);
         const data = await res.json();
 
-        console.log('🔍 Offense check:', data);
-        console.log('🔢 Count now:', data.offenses?.length, '| Last known:', _lastKnownOffenseCount);
-
+       
+        
         if (!data.success || !data.offenses || !data.offenses.length) {
-            console.log('⚠️ No offenses or failed');
+            
             return;
         }
 
@@ -1559,14 +1548,14 @@ async function checkForNewOffenses(studentNumber) {
 
         if (_lastKnownOffenseCount === null) {
             _lastKnownOffenseCount = count;
-            console.log('📌 Baseline set to:', count);
+            
             return;
         }
 
         if (count > _lastKnownOffenseCount) {
             _lastKnownOffenseCount = count;
             const newest = data.offenses[data.offenses.length - 1];
-            console.log('🚨 New offense detected:', newest);
+            
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
