@@ -25,6 +25,72 @@ body {
     color: var(--dark-navy);
 }
 
+/* ── Offense Info Tooltip ── */
+.offense-info-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--dark-navy);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.info-circle:hover {
+    background: var(--navy);
+}
+
+.info-circle .info-tooltip {
+    display: none;
+    position: absolute;
+    left: 26px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--dark-navy);
+    color: var(--white);
+    font-size: 12px;
+    font-weight: 400;
+    padding: 8px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    max-width: 280px;
+    white-space: normal;
+    width: max-content;
+    max-width: 250px;
+    z-index: 999;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    line-height: 1.5;
+    pointer-events: none;
+}
+
+.info-circle .info-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px 6px 5px 0;
+    border-style: solid;
+    border-color: transparent var(--dark-navy) transparent transparent;
+}
+
+.info-circle:hover .info-tooltip {
+    display: block;
+}
+
 .container { display: flex; min-height: 100vh; }
 
 .sidebar {
@@ -763,8 +829,8 @@ function renderStudentDMPage() {
                 colB.innerHTML = '';
             } else {
                 const half = Math.ceil(offenses.length / 2);
-                colA.innerHTML = offenses.slice(0, half).map(o => `<li>${escHtml(o.title || o)}</li>`).join('');
-                colB.innerHTML = offenses.slice(half).map(o  => `<li>${escHtml(o.title || o)}</li>`).join('');
+                colA.innerHTML = offenses.slice(0, half).map(o => buildOffenseLi(o)).join('');
+                colB.innerHTML = offenses.slice(half).map(o => buildOffenseLi(o)).join('');
             }
         }
         const penalties = penaltiesByLevel[lvl] || penaltiesByLevel[String(lvl)] || [];
@@ -782,6 +848,19 @@ function renderStudentDMPage() {
             return `<li>${label} — ${parts.join(' + ')}</li>`;
         }).join('');
     });
+}
+
+function buildOffenseLi(o) {
+    const title = o.title || o;
+    const desc  = (o.description || '').trim();
+    const infoIcon = desc
+        ? `<span class="info-circle">i<span class="info-tooltip">${escHtml(desc)}</span></span>`
+        : '';
+    return `<li><span class="offense-info-wrapper">${escHtml(title)}${infoIcon}</span></li>`;
+}
+
+function escHtml(s) {
+    return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
 }
 
 function getStudentNumberFromURL() {
