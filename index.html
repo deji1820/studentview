@@ -1496,19 +1496,39 @@ async function showAiTipForOffense(offenseName, offenseLevel, studentName) {
 
         const prompt = `The student's name is ${firstName}. They were just reported for: "${offenseName}" (Level ${offenseLevel} offense). Give them one warm, specific, practical tip to help them avoid this in the future.`;
 
+        console.log('📤 Sending to proxy...');
+
         const res  = await fetch(`${API_BASE}/api_proxy.php`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ system, prompt })
         });
 
-        const data = await res.json();
-        const tip  = data.tip || 'Remember: every mistake is a chance to grow. Talk to your guidance counselor if you need support!';
+        console.log('📥 Proxy HTTP status:', res.status);
+
+        const raw = await res.text();
+        console.log('📄 Raw proxy response:', raw);
+
+        let data;
+        try {
+            data = JSON.parse(raw);
+        } catch(e) {
+            console.error('❌ Could not parse JSON:', e);
+            throw new Error('Invalid JSON from proxy');
+        }
+
+        console.log('✅ Parsed data:', data);
+        const tip = data.tip || 'Remember: every mistake is a chance to grow. Talk to your guidance counselor if you need support!';
 
         loading.style.display = 'none';
         content.style.display = 'block';
         content.textContent   = tip;
 
+    } catch (err) {
+        console.error('💥 AI tip error:', err);
+        loading.style.display = 'none';
+        content.style.display = 'block';
+        content.textContent   = 'Remember: every mistake is a chance to grow. Speak with your teacher or guidance counselor if you need support!';
     } catch (err) {
         console.error('AI tip error:', err);
         loading.style.display = 'none';
