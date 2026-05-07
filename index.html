@@ -524,6 +524,14 @@ body {
 <!-- Toast Container -->
 <div id="toastContainer"></div>
 
+<!-- TEMP TEST BUTTON — remove after testing -->
+<button onclick="showAiTipForOffense('Tardiness', 1, 'Dela Cruz, Juan')"
+    style="position:fixed;bottom:20px;left:20px;z-index:99999;
+           background:#2d2550;color:#d4a650;border:none;border-radius:8px;
+           padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;">
+    🧪 Test AI Tip
+</button>
+
 <!-- Logout Modal -->
 <div id="logoutModal" class="modal-overlay">
     <div class="logout-modal-box">
@@ -1517,29 +1525,36 @@ async function checkForNewOffenses(studentNumber) {
     try {
         const res  = await apiFetch(`${API_BASE}/get_student_offenses.php?student_number=${encodeURIComponent(studentNumber)}`);
         const data = await res.json();
-        if (!data.success || !data.offenses || !data.offenses.length) return;
+
+        console.log('🔍 Offense check:', data);
+        console.log('🔢 Count now:', data.offenses?.length, '| Last known:', _lastKnownOffenseCount);
+
+        if (!data.success || !data.offenses || !data.offenses.length) {
+            console.log('⚠️ No offenses or failed');
+            return;
+        }
 
         const count = data.offenses.length;
 
         if (_lastKnownOffenseCount === null) {
-            // First load — just record baseline silently
             _lastKnownOffenseCount = count;
+            console.log('📌 Baseline set to:', count);
             return;
         }
 
         if (count > _lastKnownOffenseCount) {
-            // New offense detected!
             _lastKnownOffenseCount = count;
             const newest = data.offenses[data.offenses.length - 1];
+            console.log('🚨 New offense detected:', newest);
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
-                newest.offense      || 'a school offense',
+                newest.offense       || 'a school offense',
                 newest.offense_level || '?',
                 studentName
             );
         }
     } catch(err) {
-        console.error('checkForNewOffenses:', err);
+        console.error('checkForNewOffenses error:', err);
     }
 }
 </script>
