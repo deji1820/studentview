@@ -869,7 +869,10 @@ function logout() {
     document.getElementById('logoutModal').classList.add('show');
 }
 function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('show'); }
-function confirmLogout()    { window.location.href = 'https://login-topaz-iota.vercel.app/'; }
+function confirmLogout() {
+    sessionStorage.clear();
+    window.location.href = 'https://login-topaz-iota.vercel.app/';
+}
 
 // ── Coming Soon modal ──────────────────────────────────────
 function showComingSoon(featureName) {
@@ -1079,6 +1082,11 @@ async function loadStudentOffenses(studentNumber) {
             });
         }
     } catch (err) { console.error('loadStudentOffenses:', err); }
+    // Seed the AI tip baseline from real data
+const bKey = `offenseBaseline_${studentNumber}`;
+if (sessionStorage.getItem(bKey) === null) {
+    sessionStorage.setItem(bKey, offenses.length);
+}
 }
 
 async function loadStudentGMRC(studentNumber) {
@@ -1546,25 +1554,18 @@ async function checkForNewOffenses(studentNumber) {
         const offenses = data.offenses || [];
         const count    = offenses.length;
         const last     = offenses[offenses.length - 1];
-        const key      = last ? `${last.offense_date}|${last.offense}` : '';
+        const key      = `offenseBaseline_${studentNumber}`;
+        const stored   = sessionStorage.getItem(key);
 
-        // Use sessionStorage so the baseline survives the 3-second delay
-        const storedCount = sessionStorage.getItem(`offenseCount_${studentNumber}`);
-        const storedKey   = sessionStorage.getItem(`offenseKey_${studentNumber}`);
-
-        if (storedCount === null) {
-            // Very first check ever — just save baseline, never show tip
-            sessionStorage.setItem(`offenseCount_${studentNumber}`, count);
-            sessionStorage.setItem(`offenseKey_${studentNumber}`, key);
+        if (stored === null) {
+            // Baseline not yet set — set it now and never show a tip
+            sessionStorage.setItem(key, count);
             return;
         }
 
-        const knownCount = parseInt(storedCount, 10);
-
-        if (count > knownCount) {
-            // Genuine new offense added since last check
-            sessionStorage.setItem(`offenseCount_${studentNumber}`, count);
-            sessionStorage.setItem(`offenseKey_${studentNumber}`, key);
+        const baseline = parseInt(stored, 10);
+        if (count > baseline) {
+            sessionStorage.setItem(key, count);
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 last.offense       || 'a school offense',
