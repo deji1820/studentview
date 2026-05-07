@@ -1539,34 +1539,33 @@ async function checkForNewOffenses(studentNumber) {
 
        
         
-        if (!data.success || !data.offenses || !data.offenses.length) {
-            
-            return;
-        }
+        if (!data.success) return;
 
-        const count = data.offenses.length;
+const offenses = data.offenses || [];
+const count = offenses.length;
 
-        if (_lastKnownOffenseCount === null) {
-            _lastKnownOffenseCount = count;
-            
-            return;
-        }
+if (_lastKnownOffenseCount === null) {
+    _lastKnownOffenseCount = count;
+    return;
+}
 
-        if (count > _lastKnownOffenseCount) {
-            _lastKnownOffenseCount = count;
-            const newest = data.offenses[data.offenses.length - 1];
-            
-            const studentName = document.querySelector('.user-name')?.textContent || '';
-            showAiTipForOffense(
-                newest.offense       || 'a school offense',
-                newest.offense_level || '?',
-                studentName
-            );
-        }
-    } catch(err) {
+if (count > _lastKnownOffenseCount) {
+    _lastKnownOffenseCount = count;
+    const newest = offenses[offenses.length - 1];
+    const studentName = document.querySelector('.user-name')?.textContent || '';
+    showAiTipForOffense(
+        newest.offense       || 'a school offense',
+        newest.offense_level || '?',
+        studentName
+    );
+}
+return;
+
+} catch(err) {
         console.error('checkForNewOffenses error:', err);
     }
 }
+        
 </script>
     <!-- ── First Login / Change Password Modal ── -->
 <div id="firstLoginModal" class="modal-overlay" style="z-index:99998;">
