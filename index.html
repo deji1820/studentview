@@ -1492,7 +1492,9 @@ Rules:
 - Do NOT say "I" or "you" 
 - Keep it to 2-3 sentences maximum
 - Be direct, formal, and constructive
-- Start with something like "Students are reminded..." or "It is important to..." or "Punctuality is..."`;
+- Start with something like "Students are reminded..." or "It is important to..." or "Punctuality is..."
+- Do NOT use markdown, asterisks, bold formatting, or special characters`;
+        
         const prompt = `The student's name is ${firstName}. They were just reported for: "${offenseName}" (Level ${offenseLevel} offense). Give them one warm, specific, practical tip to help them avoid this in the future.`;
 
         const res  = await fetch(`${API_BASE}/api_proxy.php`, {
@@ -1540,6 +1542,7 @@ async function checkForNewOffenses(studentNumber) {
         if (!data.success) return;
 
         const offenses = data.offenses || [];
+        if (offenses.length > 0) console.log('offense fields:', JSON.stringify(offenses[0]));
         const count    = offenses.length;
 
         if (_lastKnownOffenseCount === null) {
