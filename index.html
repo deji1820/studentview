@@ -1081,12 +1081,13 @@ async function loadStudentOffenses(studentNumber) {
                 historyTable.appendChild(row);
             });
         }
-    } catch (err) { console.error('loadStudentOffenses:', err); }
     // Seed the AI tip baseline from real data
-const bKey = `offenseBaseline_${studentNumber}`;
-if (sessionStorage.getItem(bKey) === null) {
-    sessionStorage.setItem(bKey, offenses.length);
-}
+        const bKey = `offenseBaseline_${studentNumber}`;
+        if (sessionStorage.getItem(bKey) === null) {
+            sessionStorage.setItem(bKey, offenses.length);
+        }
+
+    } catch (err) { console.error('loadStudentOffenses:', err); }
 }
 
 async function loadStudentGMRC(studentNumber) {
