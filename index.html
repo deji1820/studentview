@@ -1529,12 +1529,7 @@ async function showAiTipForOffense(offenseName, offenseLevel, studentName) {
         loading.style.display = 'none';
         content.style.display = 'block';
         content.textContent   = 'Remember: every mistake is a chance to grow. Speak with your teacher or guidance counselor if you need support!';
-    } catch (err) {
-        console.error('AI tip error:', err);
-        loading.style.display = 'none';
-        content.style.display = 'block';
-        content.textContent   = 'Remember: every mistake is a chance to grow. Speak with your teacher or guidance counselor if you need support!';
-    }
+    } 
 }
 
 // ── Hook into submitViolation response ───────────────────
