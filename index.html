@@ -1468,13 +1468,12 @@ function closeAiTipModal() {
 }
 
 async function showAiTipForOffense(offenseName, offenseLevel, studentName) {
-    const modal      = document.getElementById('aiTipModal');
-    const badge      = document.getElementById('aiTipOffenseBadge');
-    const loading    = document.getElementById('aiTipLoading');
-    const content    = document.getElementById('aiTipContent');
+    const modal   = document.getElementById('aiTipModal');
+    const badge   = document.getElementById('aiTipOffenseBadge');
+    const loading = document.getElementById('aiTipLoading');
+    const content = document.getElementById('aiTipContent');
 
-    // Reset and open
-    badge.textContent    = `${offenseName} — Level ${offenseLevel}`;
+    badge.textContent     = `${offenseName} — Level ${offenseLevel}`;
     loading.style.display = 'flex';
     content.style.display = 'none';
     content.textContent   = '';
@@ -1485,28 +1484,18 @@ async function showAiTipForOffense(offenseName, offenseLevel, studentName) {
             ? studentName.split(',')[1]?.trim().split(' ')[0] || studentName
             : 'there';
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
+        const system = `You are a warm, supportive school guidance assistant at Holy Infant Montessori Center (HIMC). A student has just been reported for a school offense. Your job is to give them a short, encouraging, and practical tip on how to avoid repeating this behavior. Be kind, non-judgmental, and speak directly to the student. Keep your response to 3-4 sentences maximum. Do NOT lecture or moralize. Focus on a single, actionable tip they can use tomorrow. Do NOT use bullet points or lists — write in natural, friendly prose.`;
+
+        const prompt = `The student's name is ${firstName}. They were just reported for: "${offenseName}" (Level ${offenseLevel} offense). Give them one warm, specific, practical tip to help them avoid this in the future.`;
+
+        const res  = await apiFetch(`${API_BASE}/api_proxy.php`, {
+            method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
-                max_tokens: 1000,
-                system: `You are a warm, supportive school guidance assistant at Holy Infant Montessori Center (HIMC). 
-A student has just been reported for a school offense. Your job is to give them a short, 
-encouraging, and practical tip on how to avoid repeating this behavior. 
-Be kind, non-judgmental, and speak directly to the student. 
-Keep your response to 3-4 sentences maximum. 
-Do NOT lecture or moralize. Focus on a single, actionable tip they can use tomorrow.
-Do NOT use bullet points or lists — write in natural, friendly prose.`,
-                messages: [{
-                    role: 'user',
-                    content: `The student's name is ${firstName}. They were just reported for: "${offenseName}" (Level ${offenseLevel} offense). Give them one warm, specific, practical tip to help them avoid this in the future.`
-                }]
-            })
+            body:    JSON.stringify({ system, prompt })
         });
 
-        const data = await response.json();
-        const tip  = data?.content?.[0]?.text || 'Remember: every mistake is a chance to grow. Talk to your guidance counselor if you need support!';
+        const data = await res.json();
+        const tip  = data.tip || 'Remember: every mistake is a chance to grow. Talk to your guidance counselor if you need support!';
 
         loading.style.display = 'none';
         content.style.display = 'block';
