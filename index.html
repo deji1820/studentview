@@ -1535,6 +1535,7 @@ Rules:
 
 let _lastKnownOffenseCount = null;
 let _lastKnownOffenseKey   = null;
+let _initialLoadDone       = false;
 
 async function checkForNewOffenses(studentNumber) {
     try {
@@ -1547,13 +1548,14 @@ async function checkForNewOffenses(studentNumber) {
         const last     = offenses[offenses.length - 1];
         const key      = last ? `${last.offense_date}|${last.offense}` : '';
 
-        if (_lastKnownOffenseCount === null) {
+        if (!_initialLoadDone) {
             _lastKnownOffenseCount = count;
             _lastKnownOffenseKey   = key;
+            _initialLoadDone       = true;
             return;
         }
 
-        if (count > _lastKnownOffenseCount || (count === _lastKnownOffenseCount && key !== _lastKnownOffenseKey)) {
+        if (count > _lastKnownOffenseCount && key !== _lastKnownOffenseKey) {
             _lastKnownOffenseCount = count;
             _lastKnownOffenseKey   = key;
             const studentName = document.querySelector('.user-name')?.textContent || '';
