@@ -1535,9 +1535,7 @@ Rules:
 // ── Hook into submitViolation response ───────────────────
 // Wrap the existing notification polling to detect new offenses
 
-let _lastKnownOffenseCount = null;
-let _lastKnownOffenseKey   = null;
-let _initialLoadDone       = false;
+let _initialLoadDone = false;
 
 async function checkForNewOffenses(studentNumber) {
     try {
@@ -1550,16 +1548,23 @@ async function checkForNewOffenses(studentNumber) {
         const last     = offenses[offenses.length - 1];
         const key      = last ? `${last.offense_date}|${last.offense}` : '';
 
-        if (!_initialLoadDone) {
-            _lastKnownOffenseCount = count;
-            _lastKnownOffenseKey   = key;
-            _initialLoadDone       = true;
+        // Use sessionStorage so the baseline survives the 3-second delay
+        const storedCount = sessionStorage.getItem(`offenseCount_${studentNumber}`);
+        const storedKey   = sessionStorage.getItem(`offenseKey_${studentNumber}`);
+
+        if (storedCount === null) {
+            // Very first check ever — just save baseline, never show tip
+            sessionStorage.setItem(`offenseCount_${studentNumber}`, count);
+            sessionStorage.setItem(`offenseKey_${studentNumber}`, key);
             return;
         }
 
-        if (count > _lastKnownOffenseCount) {
-            _lastKnownOffenseCount = count;
-            _lastKnownOffenseKey   = key;
+        const knownCount = parseInt(storedCount, 10);
+
+        if (count > knownCount) {
+            // Genuine new offense added since last check
+            sessionStorage.setItem(`offenseCount_${studentNumber}`, count);
+            sessionStorage.setItem(`offenseKey_${studentNumber}`, key);
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 last.offense       || 'a school offense',
