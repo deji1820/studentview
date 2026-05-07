@@ -1492,8 +1492,14 @@ async function showAiTipForOffense(offenseName, offenseLevel, studentName) {
             ? studentName.split(',')[1]?.trim().split(' ')[0] || studentName
             : 'there';
 
-        const system = `You are a warm, supportive school guidance assistant at Holy Infant Montessori Center (HIMC). A student has just been reported for a school offense. Your job is to give them a short, encouraging, and practical tip on how to avoid repeating this behavior. Be kind, non-judgmental, and speak directly to the student. Keep your response to 3-4 sentences maximum. Do NOT lecture or moralize. Focus on a single, actionable tip they can use tomorrow. Do NOT use bullet points or lists — write in natural, friendly prose.`;
-
+        const system = `You are the HIMC Disciplinary System. Generate a short, formal guidance tip for a student who committed a school offense. 
+Rules:
+- Write in third person or as a system notice, NOT as a conversation
+- Do NOT address the student by name
+- Do NOT say "I" or "you" 
+- Keep it to 2-3 sentences maximum
+- Be direct, formal, and constructive
+- Start with something like "Students are reminded..." or "It is important to..." or "Punctuality is..."`;
         const prompt = `The student's name is ${firstName}. They were just reported for: "${offenseName}" (Level ${offenseLevel} offense). Give them one warm, specific, practical tip to help them avoid this in the future.`;
 
         console.log('📤 Sending to proxy...');
