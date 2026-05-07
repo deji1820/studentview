@@ -1082,10 +1082,6 @@ async function loadStudentOffenses(studentNumber) {
             });
         }
     // Seed the AI tip baseline from real data
-        const bKey = `offenseBaseline_${studentNumber}`;
-        if (sessionStorage.getItem(bKey) === null) {
-            sessionStorage.setItem(bKey, offenses.length);
-        }
 
     } catch (err) { console.error('loadStudentOffenses:', err); }
 }
@@ -1553,36 +1549,28 @@ async function checkForNewOffenses(studentNumber) {
         if (!data.success) return;
 
         const offenses = data.offenses || [];
-        const count    = offenses.length;
-        const key      = `offenseBaseline_${studentNumber}`;
-        const lastIdKey = `offenseLastId_${studentNumber}`;
-        const stored   = sessionStorage.getItem(key);
+        const key      = `offenseLastId_${studentNumber}`;
+        const storedId = sessionStorage.getItem(key);
 
-        if (stored === null) {
-            sessionStorage.setItem(key, count);
-            // Store the ID of the most recent offense as baseline
-            if (offenses.length > 0) {
-                const latestId = offenses[offenses.length - 1].id || offenses[0].id;
-                sessionStorage.setItem(lastIdKey, latestId);
-            }
+        // Get the newest offense (API is newest-first, so index 0)
+        const newest = offenses[0];
+        if (!newest) return;
+
+        const newestId = String(newest.id);
+
+        if (storedId === null) {
+            // First load — just set baseline, no tip
+            sessionStorage.setItem(key, newestId);
             return;
         }
 
-        const baseline = parseInt(stored, 10);
-        if (count > baseline) {
-            sessionStorage.setItem(key, count);
-
-            // Find the truly NEW offenses (those added since last check)
-            // Get the newest offense — try first item if API returns newest-first,
-            // otherwise last item if oldest-first
-            const newOffense = offenses[0]; // ← change to offenses[offenses.length - 1] if API is oldest-first
-
-            sessionStorage.setItem(lastIdKey, newOffense.id || '');
-
+        if (newestId !== storedId) {
+            // A new offense was added
+            sessionStorage.setItem(key, newestId);
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
-                newOffense.offense       || 'a school offense',
-                newOffense.offense_level || '?',
+                newest.offense       || 'a school offense',
+                newest.offense_level || '?',
                 studentName
             );
         }
