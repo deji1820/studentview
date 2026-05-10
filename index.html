@@ -1057,13 +1057,13 @@ async function loadStudentOffenses(studentNumber) {
         const homeTbody = document.querySelector('#homePage .offense-table tbody');
         if (homeTbody) {
             homeTbody.innerHTML = offenses.length
-                ? offenses.map(o => `<tr>
-                    <td>${escHtml(o.offense_date)}</td>
-                    <td>${escHtml(o.offense)}</td>
-                    <td>${o.offense_level}</td>
-                    <td>${escHtml(o.evidence_links || 'N/A')}</td>
-                    <td>${escHtml(o.remarks || 'N/A')}</td>
-                  </tr>`).join('')
+    ? offenses.slice().reverse().map(o => `<tr>
+        <td>${escHtml(o.offense_date)}</td>
+        <td>${escHtml(o.offense)}</td>
+        <td>${o.offense_level}</td>
+        <td>${escHtml(o.evidence_links || 'N/A')}</td>
+        <td>${escHtml(o.remarks || 'N/A')}</td>
+      </tr>`).join('')
                 : `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No offense records found.</td></tr>`;
         }
 
