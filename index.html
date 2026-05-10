@@ -1552,21 +1552,30 @@ async function checkForNewOffenses(studentNumber) {
         const key      = `offenseLastId_${studentNumber}`;
         const storedId = sessionStorage.getItem(key);
 
-        // Get the newest offense (API is newest-first, so index 0)
         const newest = offenses[0];
         if (!newest) return;
 
-        const newestId = String(newest.id);
+        console.log('Newest offense object:', newest); // ADD THIS LINE
+
+        // Use whichever ID field your API returns
+        const newestId = String(newest.offense_id || newest.violation_id || newest.id || '');
+
+        if (!newestId) {
+            console.warn('No ID field found on offense object:', newest);
+            return;
+        }
 
         if (storedId === null) {
-            // First load — just set baseline, no tip
             sessionStorage.setItem(key, newestId);
             return;
         }
 
         if (newestId !== storedId) {
-            // A new offense was added
             sessionStorage.setItem(key, newestId);
+
+            // Refresh the offense table
+            loadStudentOffenses(studentNumber);
+
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
