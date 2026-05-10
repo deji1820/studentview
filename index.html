@@ -1027,6 +1027,7 @@ async function loadAnnouncement() {
 async function loadStudentData() {
     const studentNumber = getStudentNumberFromURL();
     if (!studentNumber) { window.location.href = 'https://login-topaz-iota.vercel.app/'; return; }
+    sessionStorage.removeItem(`offenseLastCount_${studentNumber}`);
 
     try {
         const res  = await apiFetch(`${API_BASE}/get_students.php?student_number=${studentNumber}`);
