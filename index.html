@@ -1558,8 +1558,44 @@ async function checkForNewOffenses(studentNumber) {
         console.log('Newest offense object:', newest); // ADD THIS LINE
 
         // Use whichever ID field your API returns
-        const newestId = `${newest.offense_date}_${newest.offense}_${newest.offense_level}`;
+        async function checkForNewOffenses(studentNumber) {
+    try {
+        const res  = await apiFetch(`${API_BASE}/get_student_offenses.php?student_number=${encodeURIComponent(studentNumber)}`);
+        const data = await res.json();
+        if (!data.success) return;
 
+        const offenses = data.offenses || [];
+        const count    = offenses.length;
+        const key      = `offenseLastCount_${studentNumber}`;
+        const stored   = sessionStorage.getItem(key);
+
+        if (stored === null) {
+            // First load — set baseline, no tip
+            sessionStorage.setItem(key, count);
+            return;
+        }
+
+        const prevCount = parseInt(stored, 10);
+        if (count > prevCount) {
+            sessionStorage.setItem(key, count);
+
+            // Refresh the table
+            loadStudentOffenses(studentNumber);
+
+            // The newest offense is the one that wasn't there before
+            // Since count increased, grab the first item not in previous batch
+            const newest = offenses[offenses.length - 1]; // oldest-to-newest, last = newest added
+            const studentName = document.querySelector('.user-name')?.textContent || '';
+            showAiTipForOffense(
+                newest.offense       || 'a school offense',
+                newest.offense_level || '?',
+                studentName
+            );
+        }
+    } catch(err) {
+        console.error('checkForNewOffenses error:', err);
+    }
+}
         if (storedId === null) {
             sessionStorage.setItem(key, newestId);
             return;
