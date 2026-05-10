@@ -1558,12 +1558,7 @@ async function checkForNewOffenses(studentNumber) {
         console.log('Newest offense object:', newest); // ADD THIS LINE
 
         // Use whichever ID field your API returns
-        const newestId = String(newest.offense_id || newest.violation_id || newest.id || '');
-
-        if (!newestId) {
-            console.warn('No ID field found on offense object:', newest);
-            return;
-        }
+        const newestId = `${newest.offense_date}_${newest.offense}_${newest.offense_level}`;
 
         if (storedId === null) {
             sessionStorage.setItem(key, newestId);
