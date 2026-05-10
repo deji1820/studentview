@@ -134,6 +134,64 @@ body {
     background: var(--navy);
 }
 
+/* ── Pagination ── */
+.pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-top: 1px solid #f3f4f6;
+    background: var(--white);
+}
+.pagination-info {
+    font-size: 13px;
+    color: #6c757d;
+}
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.page-btn {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid #e0e0e0;
+    background: var(--white);
+    color: var(--dark-navy);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.page-btn:hover:not(:disabled) {
+    background: var(--dark-navy);
+    color: var(--gold);
+    border-color: var(--dark-navy);
+}
+.page-btn.active {
+    background: var(--dark-navy);
+    color: var(--gold);
+    border-color: var(--dark-navy);
+    font-weight: 700;
+}
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.page-size-select {
+    padding: 6px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    color: var(--dark-navy);
+    cursor: pointer;
+    background: var(--white);
+}
+
 .info-circle .info-tooltip {
     display: none;
     position: absolute;
@@ -638,22 +696,24 @@ body {
                 </div>
             </div>
             <div class="offense-table-wrapper">
-                <table class="offense-table">
-                    <thead>
-                        <tr><th>Date</th><th>Offense</th><th>Level</th><th>Evidence</th><th>Remarks</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>12/15/2024</td><td>Tardiness</td><td>1</td><td>N/A</td><td>N/A</td></tr>
-                        <tr><td>12/15/2024</td><td>Improper haircut</td><td>1</td><td>N/A</td><td>N/A</td></tr>
-                        <tr><td>12/16/2024</td><td>Tardiness</td><td>1</td><td>N/A</td><td>N/A</td></tr>
-                        <tr><td>12/19/2024</td><td>Bringing of electric gadgets</td><td>2</td><td>12345678_.pdf</td><td>Electric gadget is confiscated</td></tr>
-                        <tr><td>01/10/2025</td><td>Misbehavior</td><td>1</td><td>N/A</td><td>N/A</td></tr>
-                        <tr><td>01/30/2025</td><td>Tardiness</td><td>1</td><td>N/A</td><td>N/A</td></tr>
-                        <tr><td>02/24/2025</td><td>Cutting classes</td><td>3</td><td>N/A</td><td>N/A</td></tr>
-                        <tr><td>03/06/2025</td><td>Initiating fights or fighting</td><td>4</td><td>12345678_.pdf</td><td>Referred to guidance counselor</td></tr>
-                    </tbody>
-                </table>
-            </div>
+    <table class="offense-table">
+        <thead>
+            <tr><th>Date</th><th>Offense</th><th>Level</th><th>Evidence</th><th>Remarks</th></tr>
+        </thead>
+        <tbody id="homeOffenseTableBody"></tbody>
+    </table>
+    <div class="pagination-wrapper">
+        <div class="pagination-info" id="homePaginationInfo">Showing 0–0 of 0 records</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <select class="page-size-select" id="homePageSizeSelect" onchange="homeGoToPage(1)">
+                <option value="5">5 / page</option>
+                <option value="10" selected>10 / page</option>
+                <option value="20">20 / page</option>
+            </select>
+            <div class="pagination-controls" id="homePaginationControls"></div>
+        </div>
+    </div>
+</div>
         </div>
 
         <!-- Offense Records Page -->
@@ -1054,19 +1114,9 @@ async function loadStudentOffenses(studentNumber) {
         const data = await res.json();
         const offenses = (data.success && data.offenses) ? data.offenses : [];
 
-        const homeTbody = document.querySelector('#homePage .offense-table tbody');
-        if (homeTbody) {
-            homeTbody.innerHTML = offenses.length
-    ? offenses.slice().reverse().map(o => `<tr>
-        <td>${escHtml(o.offense_date)}</td>
-        <td>${escHtml(o.offense)}</td>
-        <td>${o.offense_level}</td>
-        <td>${escHtml(o.evidence_links || 'N/A')}</td>
-        <td>${escHtml(o.remarks || 'N/A')}</td>
-      </tr>`).join('')
-                : `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No offense records found.</td></tr>`;
-        }
-
+        _homeOffenses = offenses.slice().reverse();
+_homeCurrentPage = 1;
+renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
         if (historyTable) {
             historyTable.querySelectorAll('.table-row:not(.header-row)').forEach(r => r.remove());
@@ -1592,6 +1642,62 @@ async function checkForNewOffenses(studentNumber) {
     } catch(err) {
         console.error('checkForNewOffenses error:', err);
     }
+}
+
+// ── Home Table Pagination ──────────────────────────────────
+let _homeOffenses = [];
+let _homeCurrentPage = 1;
+
+function homeGoToPage(page) {
+    _homeCurrentPage = page;
+    renderHomeTable();
+}
+
+function renderHomeTable() {
+    const pageSize = parseInt(document.getElementById('homePageSizeSelect')?.value || 10);
+    const total    = _homeOffenses.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    _homeCurrentPage = Math.min(_homeCurrentPage, totalPages);
+
+    const start  = (_homeCurrentPage - 1) * pageSize;
+    const end    = Math.min(start + pageSize, total);
+    const slice  = _homeOffenses.slice(start, end);
+
+    const tbody = document.getElementById('homeOffenseTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = slice.length
+        ? slice.map(o => `<tr>
+            <td>${escHtml(o.offense_date)}</td>
+            <td>${escHtml(o.offense)}</td>
+            <td>${o.offense_level}</td>
+            <td>${escHtml(o.evidence_links || 'N/A')}</td>
+            <td>${escHtml(o.remarks || 'N/A')}</td>
+          </tr>`).join('')
+        : `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No offense records found.</td></tr>`;
+
+    // Info
+    const infoEl = document.getElementById('homePaginationInfo');
+    if (infoEl) infoEl.textContent = total
+        ? `Showing ${start + 1}–${end} of ${total} record${total !== 1 ? 's' : ''}`
+        : 'No records';
+
+    // Controls
+    const ctrl = document.getElementById('homePaginationControls');
+    if (!ctrl) return;
+    let html = `<button class="page-btn" onclick="homeGoToPage(${_homeCurrentPage - 1})" ${_homeCurrentPage === 1 ? 'disabled' : ''}>‹</button>`;
+
+    const delta = 2;
+    for (let p = 1; p <= totalPages; p++) {
+        if (p === 1 || p === totalPages || (p >= _homeCurrentPage - delta && p <= _homeCurrentPage + delta)) {
+            html += `<button class="page-btn ${p === _homeCurrentPage ? 'active' : ''}" onclick="homeGoToPage(${p})">${p}</button>`;
+        } else if (p === _homeCurrentPage - delta - 1 || p === _homeCurrentPage + delta + 1) {
+            html += `<span style="padding:0 4px;color:#aaa;">…</span>`;
+        }
+    }
+
+    html += `<button class="page-btn" onclick="homeGoToPage(${_homeCurrentPage + 1})" ${_homeCurrentPage === totalPages ? 'disabled' : ''}>›</button>`;
+    ctrl.innerHTML = html;
 }
         
 </script>
