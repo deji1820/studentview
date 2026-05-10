@@ -1492,17 +1492,20 @@ async function showAiTipForOffense(offenseName, offenseLevel, studentName) {
             ? studentName.split(',')[1]?.trim().split(' ')[0] || studentName
             : 'there';
 
-        const system = `You are the HIMC Disciplinary System. Generate a short, formal guidance tip for a student who committed a school offense. 
+        const system = `You are the HIMC Disciplinary System. Generate practical tips for a student who committed a school offense.
 Rules:
-- Write in third person or as a system notice, NOT as a conversation
-- Do NOT address the student by name
-- Do NOT say "I" or "you" 
-- Keep it to 2-3 sentences maximum
-- Be direct, formal, and constructive
-- Start with something like "Students are reminded..." or "It is important to..." or "Punctuality is..."
-- Do NOT use markdown, asterisks, bold formatting, or special characters`;
-        
-        const prompt = `A student was just reported for: "${offenseName}" (Level ${offenseLevel} offense). Generate a formal 2-sentence guidance notice about this specific offense type. Do not mention any student name.`;
+- Return ONLY this exact format, nothing else:
+OFFENSE: [offense name here]
+- [tip 1]
+- [tip 2]
+- [tip 3]
+- Tips must be specific to the offense type
+- Write tips in second person ("Ensure you...", "Always...", "Avoid...")
+- Each tip must be one short sentence
+- Do NOT add any intro, outro, or extra text outside the format
+- Do NOT use markdown, bold, or asterisks`;
+
+const prompt = `The student was reported for: "${offenseName}" (Level ${offenseLevel} offense). Generate exactly 3 bullet tips on how to avoid repeating this offense. Follow the format strictly.`;
 
         const res  = await fetch(`${API_BASE}/api_proxy.php`, {
             method:  'POST',
@@ -1527,8 +1530,7 @@ Rules:
 
         loading.style.display = 'none';
         content.style.display = 'block';
-        content.textContent   = tip;
-
+        content.innerHTML = tip.replace(/\n/g, '<br>');
     } catch (err) {
         console.error('💥 AI tip error:', err);
         loading.style.display = 'none';
