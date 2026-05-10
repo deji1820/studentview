@@ -1529,8 +1529,24 @@ const prompt = `The student was reported for: "${offenseName}" (Level ${offenseL
         const tip = data.tip || 'Remember: every mistake is a chance to grow. Talk to your guidance counselor if you need support!';
 
         loading.style.display = 'none';
-        content.style.display = 'block';
-        content.innerHTML = tip.replace(/\n/g, '<br>');
+content.style.display = 'block';
+
+// Parse and render formatted output
+const lines = tip.split('\n').map(l => l.trim()).filter(Boolean);
+let html = '';
+lines.forEach(line => {
+    if (line.startsWith('OFFENSE:')) {
+        const offenseTitle = line.replace('OFFENSE:', '').trim();
+        html += `<div style="font-size:15px;font-weight:700;color:var(--dark-navy);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--light-gray);">⚠️ ${offenseTitle}</div>`;
+    } else if (line.startsWith('-') || line.startsWith('•')) {
+        const tipText = line.replace(/^[-•]\s*/, '').trim();
+        html += `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:6px;"></span>
+            <span style="font-size:13px;color:var(--dark-navy);line-height:1.6;">${tipText}</span>
+        </div>`;
+    }
+});
+content.innerHTML = html || tip;
     } catch (err) {
         console.error('💥 AI tip error:', err);
         loading.style.display = 'none';
