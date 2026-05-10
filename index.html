@@ -1189,9 +1189,12 @@ async function loadDocumentTypeOptions() {
     try {
         const res  = await apiFetch(`${API_BASE}/get_form_templates.php`);
         const data = await res.json();
-        if (!data.success || !data.templates.length) { sel.innerHTML = '<option value="">No templates available</option>'; return; }
+        const templates = (data.success && data.templates)
+            ? data.templates.filter(t => t.appears_in === 'document_request')
+            : [];
+        if (!templates.length) { sel.innerHTML = '<option value="">No templates available</option>'; return; }
         sel.innerHTML = '<option value="">Select Document</option>' +
-            data.templates.map(t => `<option value="${escHtml(t.template_name)}">${escHtml(t.template_name)}</option>`).join('');
+            templates.map(t => `<option value="${escHtml(t.template_name)}">${escHtml(t.template_name)}</option>`).join('');
     } catch(err) {
         console.error('loadDocumentTypeOptions:', err);
         sel.innerHTML = '<option value="">Failed to load</option>';
