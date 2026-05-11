@@ -419,13 +419,20 @@ body {
 .student-simple-info { font-size: 14px; line-height: 1.8; color: var(--dark-navy); }
 .student-simple-info strong { font-weight: 600; }
 
-.offense-history-simple-table { background: var(--white); border-radius: 8px; overflow: hidden; }
-.table-row { display: grid; grid-template-columns: 120px 2fr 80px 2fr; border-bottom: 1px solid #e0e0e0; }
+.offense-history-simple-table { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.offense-history-table-header { position: sticky; top: 0; z-index: 2; background: var(--dark-navy); }
+.offense-history-table-body { max-height: 500px; overflow-y: auto; }
+.offense-history-table-body::-webkit-scrollbar { width: 6px; }
+.offense-history-table-body::-webkit-scrollbar-track { background: #f1f1f1; }
+.offense-history-table-body::-webkit-scrollbar-thumb { background: var(--dark-navy); border-radius: 10px; }
+.table-row { display: grid; grid-template-columns: 130px 2fr 80px 2fr; border-bottom: 1px solid #f0f0f0; }
 .table-row:last-child { border-bottom: none; }
-.header-row { background: var(--light-gray); font-weight: 600; }
-.table-cell { padding: 12px 15px; font-size: 14px; color: var(--dark-navy); border-right: 1px solid #e0e0e0; }
+.header-row { background: var(--dark-navy); font-weight: 600; }
+.table-cell { padding: 14px 16px; font-size: 14px; color: var(--dark-navy); border-right: 1px solid #f0f0f0; }
 .table-cell:last-child { border-right: none; }
-.table-row:hover:not(.header-row) { background: #f9f9f9; }
+.header-row .table-cell { color: var(--gold); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-right: 1px solid rgba(255,255,255,0.1); }
+.header-row .table-cell:last-child { border-right: none; }
+.table-row:hover:not(.header-row) { background: #f5f3ff; }
 
 .documents-grid-student { display: grid; grid-template-columns: repeat(2,1fr); gap: 25px; padding: 40px; max-width: 1400px; margin: 0 auto; }
 .document-card {
@@ -791,9 +798,12 @@ body {
                     </div>
                 </div>
                 <div class="offense-history-simple-table">
-                    <div class="table-row header-row">
-                        <div class="table-cell">Date</div><div class="table-cell">Offense</div><div class="table-cell">Level</div><div class="table-cell">Remarks</div>
-                    </div>
+    <div class="offense-history-table-header">
+        <div class="table-row header-row">
+            <div class="table-cell">Date</div><div class="table-cell">Offense</div><div class="table-cell">Level</div><div class="table-cell">Remarks</div>
+        </div>
+    </div>
+    <div class="offense-history-table-body" id="offenseHistoryTableBody">
                     <div class="table-row"><div class="table-cell">12/15/2024</div><div class="table-cell">Tardiness</div><div class="table-cell">1</div><div class="table-cell">N/A</div></div>
                     <div class="table-row"><div class="table-cell">12/15/2024</div><div class="table-cell">Improper haircut</div><div class="table-cell">1</div><div class="table-cell">N/A</div></div>
                     <div class="table-row"><div class="table-cell">12/16/2024</div><div class="table-cell">Tardiness</div><div class="table-cell">1</div><div class="table-cell">N/A</div></div>
@@ -809,7 +819,7 @@ body {
                 </div>
             </div>
         </div>
-
+       </div>
         <!-- Documents Page -->
         <div id="documentsPage" class="dashboard-content hidden">
             <div class="documents-grid-student">
@@ -1150,7 +1160,9 @@ _homeCurrentPage = 1;
 renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
         if (historyTable) {
-            historyTable.querySelectorAll('.table-row:not(.header-row)').forEach(r => r.remove());
+            const historyBody = document.getElementById('offenseHistoryTableBody');
+if (!historyBody) return;
+historyBody.innerHTML = '';
             const sorted = offenses.slice().sort((a, b) => {
     const dateA = a.offense_date || '';
     const dateB = b.offense_date || '';
@@ -1166,7 +1178,7 @@ sorted.forEach(o => {
         <div class="table-cell">${escHtml(o.offense || '—')}</div>
         <div class="table-cell">${escHtml(String(o.offense_level || '—'))}</div>
         <div class="table-cell">${escHtml(o.remarks || 'N/A')}</div>`;
-    historyTable.appendChild(row);
+    historyBody.appendChild(row);
 });
         }
     // Seed the AI tip baseline from real data
