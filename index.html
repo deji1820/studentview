@@ -1104,6 +1104,11 @@ async function loadStudentData() {
 // AI tip — run immediately now that student name is set
 checkForNewOffenses(studentNumber);
 setInterval(() => checkForNewOffenses(studentNumber), 10000);
+
+// TEMP DEBUG
+setTimeout(() => {
+    showAiTipForOffense('Test Offense', '1', 'Test Student');
+}, 1000);
     } catch (err) { console.error('loadStudentData:', err); }
 }
 
