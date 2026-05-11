@@ -1635,7 +1635,11 @@ async function checkForNewOffenses(studentNumber) {
             sessionStorage.setItem(key, count);
             loadStudentOffenses(studentNumber);
 
-            const newest = offenses.slice().reverse()[0];
+            // Find the newest offense by highest offense_report_id
+            const newest = offenses.reduce((max, o) =>
+                (parseInt(o.offense_report_id) > parseInt(max.offense_report_id)) ? o : max,
+                offenses[0]
+            );
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
