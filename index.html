@@ -1647,17 +1647,21 @@ sessionStorage.setItem(key, maxId);
 // First poll this session — just set the baseline, don't show modal
 if (prevMaxId === -1) return;
 
-const newest = _homeOffenses[0] || offenses[offenses.length - 1];
 const studentName = document.querySelector('.user-name')?.textContent || '';
 
-// Only show modal when a genuinely new offense was added
 if (maxId > prevMaxId) {
-    loadStudentOffenses(studentNumber);
-    showAiTipForOffense(
-        newest.offense       || 'a school offense',
-        newest.offense_level || '?',
-        studentName
-    );
+    // Reload the table first, then show the tip using the fresh data
+    await loadStudentOffenses(studentNumber);
+
+    // Now _homeOffenses is updated — grab the actual newest offense
+    const newest = _homeOffenses[0];
+    if (newest) {
+        showAiTipForOffense(
+            newest.offense       || 'a school offense',
+            newest.offense_level || '?',
+            studentName
+        );
+    }
 }
 
     } catch(err) {
