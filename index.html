@@ -1138,6 +1138,18 @@ renderHomeTable();
         }
     // Seed the AI tip baseline from real data
 
+     // Show AI tip after offenses are loaded and sorted
+    if (!_aiTipShownOnLoad && _homeOffenses.length > 0) {
+        _aiTipShownOnLoad = true;
+        const newest = _homeOffenses[0];
+        const studentName = document.querySelector('.user-name')?.textContent || '';
+        showAiTipForOffense(
+            newest.offense       || 'a school offense',
+            newest.offense_level || '?',
+            studentName
+        );
+    }
+
     } catch (err) { console.error('loadStudentOffenses:', err); }
 }
 
@@ -1644,16 +1656,7 @@ async function checkForNewOffenses(studentNumber) {
         const studentName = document.querySelector('.user-name')?.textContent || '';
 
         // Show on first load (once per session) OR when a new offense is added
-        if (!_aiTipShownOnLoad) {
-    _aiTipShownOnLoad = true;
-    setTimeout(() => {
-        showAiTipForOffense(
-            newest.offense       || 'a school offense',
-            newest.offense_level || '?',
-            studentName
-        );
-    }, 500);
-        } else if (maxId > prevMaxId) {
+        if (maxId > prevMaxId) {
             loadStudentOffenses(studentNumber);
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
