@@ -460,6 +460,7 @@ body {
 
 .gmrc-new-container { padding: 40px; max-width: 1400px; margin: 0 auto; }
 .gmrc-new-card { background: var(--light-gray); border-radius: 16px; padding: 40px; }
+.gmrc-new-offense-table th { padding: 15px; text-align: center; font-size: 13px; font-weight: 700; color: var(--white); background: var(--dark-navy); border: 1px solid var(--dark-navy); }
 .gmrc-new-header { background: var(--white); border-radius: 12px; padding: 30px; display: flex; align-items: center; gap: 25px; margin-bottom: 30px; }
 .gmrc-new-avatar { width: 80px; height: 80px; background: var(--dark-navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; color: var(--white); flex-shrink: 0; }
 .gmrc-new-info { flex: 1; font-size: 16px; color: var(--dark-navy); line-height: 1.8; }
@@ -467,7 +468,12 @@ body {
 .gmrc-new-grade-section { text-align: right; font-size: 16px; color: var(--dark-navy); line-height: 1.8; }
 .gmrc-new-grade-section strong { font-weight: 600; }
 .gmrc-new-content-grid { display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
-.gmrc-offense-table-container { background: var(--white); border-radius: 12px; overflow: hidden; }
+.gmrc-offense-table-container { background: var(--white); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.gmrc-offense-table-scroll { overflow-y: auto; max-height: 480px; }
+.gmrc-offense-table-scroll::-webkit-scrollbar { width: 6px; }
+.gmrc-offense-table-scroll::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+.gmrc-offense-table-scroll::-webkit-scrollbar-thumb { background: var(--dark-navy); border-radius: 10px; }
+.gmrc-new-offense-table thead { position: sticky; top: 0; z-index: 1; background: var(--white); }
 .gmrc-new-offense-table { width: 100%; border-collapse: collapse; }
 .gmrc-new-offense-table thead { background: var(--white); }
 .gmrc-new-offense-table th { padding: 15px; text-align: center; font-size: 14px; font-weight: 600; color: var(--dark-navy); border: 1px solid var(--dark-navy); }
@@ -879,11 +885,13 @@ body {
                     </div>
                     <div class="gmrc-new-content-grid">
                         <div class="gmrc-offense-table-container">
-                            <table class="gmrc-new-offense-table">
-                                <thead><tr><th>Offense</th><th>Level</th><th>Demerit</th></tr></thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
+    <div class="gmrc-offense-table-scroll">
+        <table class="gmrc-new-offense-table">
+            <thead><tr><th>Offense</th><th>Level</th><th>Demerit</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
                         <div class="gmrc-summary-card">
                             <h3 class="gmrc-summary-title">GMRC Summary</h3>
                             <div class="gmrc-summary-item"><span class="gmrc-summary-label">GMRC Grade:</span><span class="gmrc-grade-value">66</span></div>
