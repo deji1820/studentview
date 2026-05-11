@@ -1632,10 +1632,7 @@ async function checkForNewOffenses(studentNumber) {
     return;
 }
 
-        const maxId = offenses.reduce((max, o) =>
-            Math.max(max, parseInt(o.offense_report_id) || 0), 0
-        );
-
+        const maxId = offenses.length;
         const key      = `offenseLastId_${studentNumber}`;
         const stored   = sessionStorage.getItem(key);
         const prevMaxId = stored ? parseInt(stored, 10) : -1;
@@ -1643,9 +1640,7 @@ async function checkForNewOffenses(studentNumber) {
         // Always update stored ID
         sessionStorage.setItem(key, maxId);
 
-        const newest = offenses.find(o => parseInt(o.offense_report_id) === maxId);
-        if (!newest) return;
-
+        const newest = offenses[offenses.length - 1];
         const studentName = document.querySelector('.user-name')?.textContent || '';
 
         // Show on first load (once per session) OR when a new offense is added
