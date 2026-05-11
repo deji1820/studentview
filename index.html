@@ -698,8 +698,8 @@ body {
             <div class="offense-table-wrapper">
     <table class="offense-table">
         <thead>
-            <tr><th>Date</th><th>Offense</th><th>Level</th><th>Evidence</th><th>Remarks</th></tr>
-        </thead>
+    <tr><th>Date</th><th>Offense</th><th>Level</th><th>Remarks</th></tr>
+</thead>
         <tbody id="homeOffenseTableBody"></tbody>
     </table>
     <div class="pagination-wrapper">
@@ -1671,14 +1671,13 @@ function renderHomeTable() {
     if (!tbody) return;
 
     tbody.innerHTML = slice.length
-        ? slice.map(o => `<tr>
+        : slice.map(o => `<tr>
             <td>${escHtml(o.offense_date)}</td>
             <td>${escHtml(o.offense)}</td>
             <td>${o.offense_level}</td>
-            <td>${escHtml(o.evidence_links || 'N/A')}</td>
             <td>${escHtml(o.remarks || 'N/A')}</td>
           </tr>`).join('')
-        : `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px;">No offense records found.</td></tr>`;
+        : `<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px;">No offense records found.</td></tr>`;
 
     // Info
     const infoEl = document.getElementById('homePaginationInfo');
