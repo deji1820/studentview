@@ -1640,7 +1640,9 @@ async function checkForNewOffenses(studentNumber) {
 
             // Find the newest offense by highest offense_report_id
             // Last item in API response = newest (API returns ascending order)
-            const newest = offenses[offenses.length - 1];
+            const newest = offenses.reduce((a, b) =>
+    (parseInt(a.offense_report_id) > parseInt(b.offense_report_id) ? a : b)
+);
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
