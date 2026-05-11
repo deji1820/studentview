@@ -1115,7 +1115,7 @@ async function loadStudentOffenses(studentNumber) {
         const data = await res.json();
         const offenses = (data.success && data.offenses) ? data.offenses : [];
 
-       _homeOffenses = offenses.slice();
+       _homeOffenses = offenses.slice().reverse();
 _homeCurrentPage = 1;
 renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
@@ -1636,10 +1636,8 @@ async function checkForNewOffenses(studentNumber) {
             loadStudentOffenses(studentNumber);
 
             // Find the newest offense by highest offense_report_id
-            const newest = offenses.reduce((max, o) =>
-                (parseInt(o.offense_report_id) > parseInt(max.offense_report_id)) ? o : max,
-                offenses[0]
-            );
+            // Last item in API response = newest (API returns ascending order)
+            const newest = offenses[offenses.length - 1];
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
