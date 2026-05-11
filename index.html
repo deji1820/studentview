@@ -1640,7 +1640,7 @@ async function checkForNewOffenses(studentNumber) {
         // Always update stored ID
         sessionStorage.setItem(key, maxId);
 
-        const newest = offenses[offenses.length - 1];
+        const newest = _homeOffenses[0] || offenses[offenses.length - 1];
         const studentName = document.querySelector('.user-name')?.textContent || '';
 
         // Show on first load (once per session) OR when a new offense is added
