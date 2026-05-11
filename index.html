@@ -1101,11 +1101,9 @@ async function loadStudentData() {
 
         // ── AI Offense Tip polling ──
         // ── AI Offense Tip polling ──
-const sNum = studentNumber;
-setTimeout(() => {
-    checkForNewOffenses(sNum);
-    setInterval(() => checkForNewOffenses(sNum), 10000);
-}, 3000);
+// AI tip — run immediately now that student name is set
+checkForNewOffenses(studentNumber);
+setInterval(() => checkForNewOffenses(studentNumber), 10000);
     } catch (err) { console.error('loadStudentData:', err); }
 }
 
