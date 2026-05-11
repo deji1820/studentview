@@ -1162,11 +1162,10 @@ async function loadStudentGMRC(studentNumber) {
         if (remarksEl) remarksEl.textContent  = s.remarks        || '—';
 
         const tbody = document.querySelector('.gmrc-new-offense-table tbody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        const offenses = s.offenses || [];
-        if (offenses.length) {
-    if (offenses.length) {
+if (!tbody) return;
+tbody.innerHTML = '';
+const offenses = s.offenses || [];
+if (offenses.length) {
     offenses.slice().reverse().forEach(o => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1178,8 +1177,6 @@ async function loadStudentGMRC(studentNumber) {
 } else {
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#aaa;padding:20px;">No offenses recorded.</td></tr>`;
 }
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#aaa;padding:20px;">No offenses recorded.</td></tr>`;
-        }
     } catch (err) { console.error('loadStudentGMRC:', err); }
 }
 
