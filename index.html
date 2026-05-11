@@ -1151,7 +1151,7 @@ renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
         if (historyTable) {
             historyTable.querySelectorAll('.table-row:not(.header-row)').forEach(r => r.remove());
-            const sorted = [...offenses].sort((a, b) => (b.id || b.offense_id || 0) - (a.id || a.offense_id || 0));
+            const sorted = offenses.slice().reverse();
 sorted.forEach(o => {
     const row = document.createElement('div');
     row.className = 'table-row';
