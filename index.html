@@ -1115,10 +1115,9 @@ async function loadStudentOffenses(studentNumber) {
         const data = await res.json();
         const offenses = (data.success && data.offenses) ? data.offenses : [];
 
-       _homeOffenses = offenses.slice().sort((a, b) => {
-    const dateDiff = new Date(b.offense_date) - new Date(a.offense_date);
-    if (dateDiff !== 0) return dateDiff;
-    return (parseInt(b.offense_report_id) || 0) - (parseInt(a.offense_report_id) || 0);
+       // API returns oldest-first, so reverse first then stable-sort by date
+_homeOffenses = offenses.slice().reverse().sort((a, b) => {
+    return new Date(b.offense_date) - new Date(a.offense_date);
 });
 _homeCurrentPage = 1;
 renderHomeTable();
