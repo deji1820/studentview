@@ -1671,7 +1671,7 @@ function renderHomeTable() {
     if (!tbody) return;
 
     tbody.innerHTML = slice.length
-        : slice.map(o => `<tr>
+        ? slice.map(o => `<tr>
             <td>${escHtml(o.offense_date)}</td>
             <td>${escHtml(o.offense)}</td>
             <td>${o.offense_level}</td>
