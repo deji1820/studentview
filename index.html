@@ -1166,6 +1166,7 @@ async function loadStudentGMRC(studentNumber) {
         tbody.innerHTML = '';
         const offenses = s.offenses || [];
         if (offenses.length) {
+    if (offenses.length) {
     offenses.slice().reverse().forEach(o => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1174,8 +1175,9 @@ async function loadStudentGMRC(studentNumber) {
             <td>${escHtml(String(o.demerit || '—'))}</td>`;
         tbody.appendChild(tr);
     });
+} else {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#aaa;padding:20px;">No offenses recorded.</td></tr>`;
 }
-        } else {
             tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#aaa;padding:20px;">No offenses recorded.</td></tr>`;
         }
     } catch (err) { console.error('loadStudentGMRC:', err); }
