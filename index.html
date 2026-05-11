@@ -1140,7 +1140,12 @@ async function loadStudentOffenses(studentNumber) {
        // API returns oldest-first, so reverse first then stable-sort by date
 const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-_homeOffenses = offenses.slice().reverse();
+_homeOffenses = offenses
+    .filter(o => {
+        const d = o.offense_date ? o.offense_date.replace(/\//g, '-') : '';
+        return d === today;
+    })
+    .reverse();
 _homeCurrentPage = 1;
 renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
