@@ -1027,7 +1027,7 @@ async function loadAnnouncement() {
 async function loadStudentData() {
     const studentNumber = getStudentNumberFromURL();
     if (!studentNumber) { window.location.href = 'https://login-topaz-iota.vercel.app/'; return; }
-    sessionStorage.removeItem(`offenseLastId_${studentNumber}`);
+    
 
     try {
         const res  = await apiFetch(`${API_BASE}/get_students.php?student_number=${studentNumber}`);
@@ -1634,6 +1634,18 @@ const maxId = offenses.reduce((max, o) =>
 
 if (stored === null) {
     sessionStorage.setItem(key, maxId);
+    // First load — show tip for the most recent offense
+    if (offenses.length > 0) {
+        const newest = offenses.find(o => parseInt(o.offense_report_id) === maxId);
+        if (newest) {
+            const studentName = document.querySelector('.user-name')?.textContent || '';
+            showAiTipForOffense(
+                newest.offense       || 'a school offense',
+                newest.offense_level || '?',
+                studentName
+            );
+        }
+    }
     return;
 }
 
