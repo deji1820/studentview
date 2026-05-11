@@ -1125,16 +1125,20 @@ renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
         if (historyTable) {
             historyTable.querySelectorAll('.table-row:not(.header-row)').forEach(r => r.remove());
-            offenses.forEach(o => {
-                const row = document.createElement('div');
-                row.className = 'table-row';
-                row.innerHTML = `
-                    <div class="table-cell">${escHtml(o.offense_date)}</div>
-                    <div class="table-cell">${escHtml(o.offense)}</div>
-                    <div class="table-cell">${o.offense_level}</div>
-                    <div class="table-cell">${escHtml(o.remarks || 'N/A')}</div>`;
-                historyTable.appendChild(row);
-            });
+            const sorted = offenses.slice().sort((a, b) => {
+    const da = new Date(a.offense_date.replace(/\//g, '-'));
+    const db = new Date(b.offense_date.replace(/\//g, '-'));
+    return db - da;
+});
+
+sorted.forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${escHtml(o.offense || '—')}</td>
+        <td>${escHtml(String(o.offense_level || '—'))}</td>
+        <td>${escHtml(String(o.demerit || '—'))}</td>`;
+    tbody.appendChild(tr);
+});
         }
     // Seed the AI tip baseline from real data
 
