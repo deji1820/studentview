@@ -1151,7 +1151,13 @@ renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
         if (historyTable) {
             historyTable.querySelectorAll('.table-row:not(.header-row)').forEach(r => r.remove());
-            const sorted = offenses.slice().reverse();
+            const sorted = offenses.slice().sort((a, b) => {
+    const dateA = a.offense_date || '';
+    const dateB = b.offense_date || '';
+    if (dateB > dateA) return 1;
+    if (dateB < dateA) return -1;
+    return offenses.indexOf(b) - offenses.indexOf(a);
+});
 sorted.forEach(o => {
     const row = document.createElement('div');
     row.className = 'table-row';
