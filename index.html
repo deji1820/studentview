@@ -1617,6 +1617,8 @@ content.innerHTML = html || tip;
 
 let _initialLoadDone = false;
 
+let _aiTipShownOnLoad = false;
+
 async function checkForNewOffenses(studentNumber) {
     try {
         const res  = await apiFetch(`${API_BASE}/get_student_offenses.php?student_number=${encodeURIComponent(studentNumber)}`);
@@ -1624,44 +1626,41 @@ async function checkForNewOffenses(studentNumber) {
         if (!data.success) return;
 
         const offenses = data.offenses || [];
-        const count    = offenses.length;
+        if (!offenses.length) return;
+
+        const maxId = offenses.reduce((max, o) =>
+            Math.max(max, parseInt(o.offense_report_id) || 0), 0
+        );
+
         const key      = `offenseLastId_${studentNumber}`;
-const stored   = sessionStorage.getItem(key);
+        const stored   = sessionStorage.getItem(key);
+        const prevMaxId = stored ? parseInt(stored, 10) : -1;
 
-const maxId = offenses.reduce((max, o) =>
-    Math.max(max, parseInt(o.offense_report_id) || 0), 0
-);
+        // Always update stored ID
+        sessionStorage.setItem(key, maxId);
 
-if (stored === null) {
-    sessionStorage.setItem(key, maxId);
-    // First load — show tip for the most recent offense
-    if (offenses.length > 0) {
         const newest = offenses.find(o => parseInt(o.offense_report_id) === maxId);
-        if (newest) {
-            const studentName = document.querySelector('.user-name')?.textContent || '';
+        if (!newest) return;
+
+        const studentName = document.querySelector('.user-name')?.textContent || '';
+
+        // Show on first load (once per session) OR when a new offense is added
+        if (!_aiTipShownOnLoad) {
+            _aiTipShownOnLoad = true;
+            showAiTipForOffense(
+                newest.offense       || 'a school offense',
+                newest.offense_level || '?',
+                studentName
+            );
+        } else if (maxId > prevMaxId) {
+            loadStudentOffenses(studentNumber);
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
                 newest.offense_level || '?',
                 studentName
             );
         }
-    }
-    return;
-}
 
-const prevMaxId = parseInt(stored, 10);
-if (maxId > prevMaxId) {
-    sessionStorage.setItem(key, maxId);
-    loadStudentOffenses(studentNumber);
-
-    const newest = offenses.find(o => parseInt(o.offense_report_id) === maxId);
-            const studentName = document.querySelector('.user-name')?.textContent || '';
-            showAiTipForOffense(
-                newest.offense       || 'a school offense',
-                newest.offense_level || '?',
-                studentName
-            );
-        }
     } catch(err) {
         console.error('checkForNewOffenses error:', err);
     }
