@@ -1115,7 +1115,7 @@ async function loadStudentOffenses(studentNumber) {
         const data = await res.json();
         const offenses = (data.success && data.offenses) ? data.offenses : [];
 
-        _homeOffenses = offenses.slice().reverse();
+       _homeOffenses = offenses.slice();
 _homeCurrentPage = 1;
 renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
@@ -1635,7 +1635,7 @@ async function checkForNewOffenses(studentNumber) {
             sessionStorage.setItem(key, count);
             loadStudentOffenses(studentNumber);
 
-            const newest = offenses[offenses.length - 1];
+            const newest = offenses.slice().reverse()[0];
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
