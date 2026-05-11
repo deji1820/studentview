@@ -1140,26 +1140,22 @@ async function loadStudentOffenses(studentNumber) {
        // API returns oldest-first, so reverse first then stable-sort by date
 const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-_homeOffenses = offenses
-    .filter(o => {
-        const d = o.offense_date ? o.offense_date.replace(/\//g, '-') : '';
-        return d === today;
-    })
-    .reverse();
+_homeOffenses = offenses.slice().reverse();
 _homeCurrentPage = 1;
 renderHomeTable();
         const historyTable = document.querySelector('.offense-history-simple-table');
         if (historyTable) {
             historyTable.querySelectorAll('.table-row:not(.header-row)').forEach(r => r.remove());
             const sorted = offenses.slice().reverse();
-
 sorted.forEach(o => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${escHtml(o.offense || '—')}</td>
-        <td>${escHtml(String(o.offense_level || '—'))}</td>
-        <td>${escHtml(String(o.demerit || '—'))}</td>`;
-    tbody.appendChild(tr);
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    row.innerHTML = `
+        <div class="table-cell">${escHtml(o.offense_date || '—')}</div>
+        <div class="table-cell">${escHtml(o.offense || '—')}</div>
+        <div class="table-cell">${escHtml(String(o.offense_level || '—'))}</div>
+        <div class="table-cell">${escHtml(o.remarks || 'N/A')}</div>`;
+    historyTable.appendChild(row);
 });
         }
     // Seed the AI tip baseline from real data
