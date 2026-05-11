@@ -1027,7 +1027,7 @@ async function loadAnnouncement() {
 async function loadStudentData() {
     const studentNumber = getStudentNumberFromURL();
     if (!studentNumber) { window.location.href = 'https://login-topaz-iota.vercel.app/'; return; }
-    sessionStorage.removeItem(`offenseLastCount_${studentNumber}`);
+    sessionStorage.removeItem(`offenseLastId_${studentNumber}`);
 
     try {
         const res  = await apiFetch(`${API_BASE}/get_students.php?student_number=${studentNumber}`);
@@ -1625,24 +1625,24 @@ async function checkForNewOffenses(studentNumber) {
 
         const offenses = data.offenses || [];
         const count    = offenses.length;
-        const key      = `offenseLastCount_${studentNumber}`;
-        const stored   = sessionStorage.getItem(key);
+        const key      = `offenseLastId_${studentNumber}`;
+const stored   = sessionStorage.getItem(key);
 
-        if (stored === null) {
-            sessionStorage.setItem(key, count);
-            return;
-        }
-
-        const prevCount = parseInt(stored, 10);
-        if (count > prevCount) {
-            sessionStorage.setItem(key, count);
-            loadStudentOffenses(studentNumber);
-
-            // Find the newest offense by highest offense_report_id
-            // Last item in API response = newest (API returns ascending order)
-            const newest = offenses.reduce((a, b) =>
-    (parseInt(a.offense_report_id) > parseInt(b.offense_report_id) ? a : b)
+const maxId = offenses.reduce((max, o) =>
+    Math.max(max, parseInt(o.offense_report_id) || 0), 0
 );
+
+if (stored === null) {
+    sessionStorage.setItem(key, maxId);
+    return;
+}
+
+const prevMaxId = parseInt(stored, 10);
+if (maxId > prevMaxId) {
+    sessionStorage.setItem(key, maxId);
+    loadStudentOffenses(studentNumber);
+
+    const newest = offenses.find(o => parseInt(o.offense_report_id) === maxId);
             const studentName = document.querySelector('.user-name')?.textContent || '';
             showAiTipForOffense(
                 newest.offense       || 'a school offense',
