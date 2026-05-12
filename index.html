@@ -224,6 +224,7 @@ body {
     color: rgba(245,197,99,0.75); font-size: 13px; font-weight: 400;
     text-decoration: none; transition: all 0.2s ease;
     border-left: 4px solid transparent;
+    text-align: left;
 }
 .nav-sub-item:hover { color: var(--light-gold); background: rgba(212,166,80,0.08); border-left-color: var(--gold); }
 .nav-sub-item.active { color: var(--light-gold); font-weight: 600; border-left-color: var(--gold); }
@@ -248,7 +249,7 @@ body {
 .sidebar {
     width: 280px;
     background: var(--dark-navy);
-    padding: 30px 20px;
+    padding: 30px 0;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -263,6 +264,8 @@ body {
     gap: 15px;
     margin-bottom: 50px;
     padding-bottom: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
     border-bottom: 1px solid rgba(212, 166, 80, 0.3);
 }
 
@@ -288,9 +291,12 @@ body {
 .nav-item {
     display: flex; align-items: center; gap: 15px;
     padding: 15px 20px; color: var(--gold); text-decoration: none;
-    border-radius: 8px; font-size: 16px; font-weight: 500;
+    border-radius: 0; font-size: 16px; font-weight: 500;
     transition: all 0.3s ease;
+    border-left: 4px solid transparent;
 }
+.nav-item:hover { background: rgba(212, 166, 80, 0.1); border-left-color: var(--gold); }
+.nav-item.active { background: rgba(212, 166, 80, 0.15); border-left-color: var(--gold); font-weight: 500; }
 .nav-item:hover { background: rgba(212, 166, 80, 0.1); }
 .nav-item.active { background: rgba(212, 166, 80, 0.2); }
 .nav-icon { font-size: 24px; }
