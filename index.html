@@ -215,6 +215,19 @@ body {
     pointer-events: none;
 }
 
+.nav-parent { cursor: pointer; user-select: none; }
+.nav-dropdown-arrow { margin-left: auto; font-size: 11px; color: var(--gold); transition: transform 0.25s ease; }
+.nav-dropdown-arrow.open { transform: rotate(180deg); }
+.nav-dropdown { background: rgba(0,0,0,0.2); overflow: hidden; }
+.nav-sub-item {
+    display: block; padding: 10px 20px 10px 58px;
+    color: rgba(245,197,99,0.75); font-size: 13px; font-weight: 400;
+    text-decoration: none; transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+.nav-sub-item:hover { color: var(--light-gold); background: rgba(212,166,80,0.08); border-left-color: var(--gold); }
+.nav-sub-item.active { color: var(--light-gold); font-weight: 600; border-left-color: var(--gold); }
+
 .info-circle .info-tooltip::before {
     content: '';
     position: absolute;
@@ -663,11 +676,32 @@ body {
             </div>
         </div>
         <nav class="nav-menu">
-            <a href="#" class="nav-item active" onclick="navigateToHome(event)"><span class="nav-icon">🏠</span><span>Home</span></a>
-            <a href="#" class="nav-item" onclick="navigateToOffenseRecord(event)"><span class="nav-icon">📁</span><span>Offense Record</span></a>
-            <a href="#" class="nav-item" onclick="navigateToDocuments(event)"><span class="nav-icon">📄</span><span>Documents</span></a>
-            <a href="#" class="nav-item" onclick="navigateToGMRC(event)"><span class="nav-icon">📖</span><span>GMRC Grade</span></a>
-        </nav>
+    <a href="#" class="nav-item active" onclick="navigateToHome(event)">
+        <span class="nav-icon">🏠</span><span>Home</span>
+    </a>
+
+    <div class="nav-item nav-parent" onclick="toggleNavDropdown('offenseDropdown', this)">
+        <span class="nav-icon">📁</span><span>Offense Record</span>
+        <span class="nav-dropdown-arrow" id="offenseArrow">▼</span>
+    </div>
+    <div class="nav-dropdown hidden" id="offenseDropdown">
+        <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToDisciplinaryMeasures)">The HIMC Disciplinary Measures</a>
+        <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToOffenseHistory)">Offense History</a>
+    </div>
+
+    <div class="nav-item nav-parent" onclick="toggleNavDropdown('documentsDropdown', this)">
+        <span class="nav-icon">📄</span><span>Documents</span>
+        <span class="nav-dropdown-arrow" id="documentsArrow">▼</span>
+    </div>
+    <div class="nav-dropdown hidden" id="documentsDropdown">
+        <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToDocumentSubmission)">Document Submission</a>
+        <a href="#" class="nav-sub-item" onclick="navTo(event, navigateToDocumentRequest)">Document Request</a>
+    </div>
+
+    <a href="#" class="nav-item" onclick="navigateToGMRC(event)">
+        <span class="nav-icon">📖</span><span>GMRC Grade</span>
+    </a>
+</nav>
     </aside>
 
     <!-- Main Content -->
@@ -1327,6 +1361,22 @@ async function loadRequestPendingCount(studentNumber) {
 
 function updateActiveNav(index) {
     document.querySelectorAll('.nav-item').forEach((item, i) => item.classList.toggle('active', i === index));
+}
+
+function toggleNavDropdown(dropdownId, parentEl) {
+    const dropdown = document.getElementById(dropdownId);
+    const arrow = parentEl.querySelector('.nav-dropdown-arrow');
+    const isOpen = !dropdown.classList.contains('hidden');
+    dropdown.classList.toggle('hidden', isOpen);
+    arrow.classList.toggle('open', !isOpen);
+    parentEl.classList.toggle('active', !isOpen);
+}
+
+function navTo(e, fn) {
+    e.preventDefault();
+    document.querySelectorAll('.nav-sub-item').forEach(el => el.classList.remove('active'));
+    e.target.classList.add('active');
+    fn();
 }
 
 function navigateToHome(event) {
