@@ -1627,18 +1627,22 @@ function showFirstLoginModal() {
 }
 
 async function submitFirstLoginPassword(role) {
-    // Replace the existing validation block in submitFirstLoginPassword
-const hasUpper   = /[A-Z]/.test(newPass);
-const hasLower   = /[a-z]/.test(newPass);
-const hasNumber  = /[0-9]/.test(newPass);
-const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPass);
+    const newPass     = document.getElementById('flNewPassword').value.trim();
+    const confirmPass = document.getElementById('flConfirmPassword').value.trim();
+    const errEl       = document.getElementById('flError');
+    errEl.textContent = '';
 
-if (newPass.length < 8)   { errEl.textContent = 'Password must be at least 8 characters.'; return; }
-if (!hasUpper)             { errEl.textContent = 'Password must contain an uppercase letter.'; return; }
-if (!hasLower)             { errEl.textContent = 'Password must contain a lowercase letter.'; return; }
-if (!hasNumber)            { errEl.textContent = 'Password must contain a number.'; return; }
-if (!hasSpecial)           { errEl.textContent = 'Password must contain a special character.'; return; }
-if (newPass !== confirmPass){ errEl.textContent = 'Passwords do not match.'; return; }
+    const hasUpper   = /[A-Z]/.test(newPass);
+    const hasLower   = /[a-z]/.test(newPass);
+    const hasNumber  = /[0-9]/.test(newPass);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPass);
+
+    if (newPass.length < 8)    { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+    if (!hasUpper)             { errEl.textContent = 'Password must contain an uppercase letter.'; return; }
+    if (!hasLower)             { errEl.textContent = 'Password must contain a lowercase letter.'; return; }
+    if (!hasNumber)            { errEl.textContent = 'Password must contain a number.'; return; }
+    if (!hasSpecial)           { errEl.textContent = 'Password must contain a special character.'; return; }
+    if (newPass !== confirmPass){ errEl.textContent = 'Passwords do not match.'; return; }
 
     const identifier = role === 'student'
         ? getStudentNumberFromURL()
